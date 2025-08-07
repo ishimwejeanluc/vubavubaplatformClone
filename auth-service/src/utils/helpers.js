@@ -51,14 +51,32 @@ class AuthHelpers {
    * @returns {Object} - Sanitized user object
    */
   static sanitizeUser(user) {
-    if (!user) return null;
-    
-    const sanitized = { ...user.toJSON ? user.toJSON() : user };
-    delete sanitized.password;
-    delete sanitized.password_reset_token;
-    delete sanitized.password_reset_expires;
-    return sanitized;
+  if (!user) return null;
+
+  const sanitized = { ...user.toJSON ? user.toJSON() : user };
+
+  // Remove sensitive fields
+  delete sanitized.password;
+  delete sanitized.password_reset_token;
+  delete sanitized.password_reset_expires;
+
+  // Remove camelCase timestamp duplicates (keep snake_case only)
+  delete sanitized.createdAt;
+  delete sanitized.updatedAt;
+
+  // Optional: format created_at and updated_at without changing timezone
+  // Comment this block if you want raw timestamps
+  if (sanitized.created_at) {
+    sanitized.created_at = new Date(sanitized.created_at).toLocaleString('en-US');
   }
+
+  if (sanitized.updated_at) {
+    sanitized.updated_at = new Date(sanitized.updated_at).toLocaleString('en-US');
+  }
+
+  return sanitized;
+}
+
 
   /**
    * Format error response
@@ -74,23 +92,16 @@ class AuthHelpers {
         message,
         code,
         details,
-        timestamp: new Date().toISOString()
       }
     };
   }
 
-  /**
-   * Format success response
-   * @param {Object} data - Response data
-   * @param {string} message - Success message
-   * @returns {Object} - Formatted success response
-   */
+  
   static formatSuccess(data, message = 'Operation successful') {
     return {
       success: true,
       message,
       data,
-      timestamp: new Date().toISOString()
     };
   }
 

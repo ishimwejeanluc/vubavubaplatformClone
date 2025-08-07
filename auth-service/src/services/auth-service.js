@@ -1,22 +1,24 @@
-const { create } = require("../models/User");
-
+const { isAbaRouting } = require("validator");
+const  User  = require("../models/User");
+const AuthHelpers = require("../utils/helpers");
 
 class AuthService {
   async register(data) {
     const result = await User.create({
+      name: data.name,
       email: data.email,
-      password: await AuthHelpers.hashPassword(data.password),
-      username: data.username,
+      phone: data.phone,
+      password: data.password,
       role: data.role,
-      createdAt: new Date().Now(),
-      updatedAt: new Date().Now()
+      isActive: true,
     });
     if (!result) {
       throw new Error("User registration failed");
     }
+   const sanitizedUser = AuthHelpers.sanitizeUser(result);
     return {
       statusCode: 201,
-      body: AuthHelpers.sanitizeUser(result)
+      body: AuthHelpers.formatSuccess(sanitizedUser)
     };
   }
 

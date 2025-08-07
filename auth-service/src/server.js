@@ -1,15 +1,21 @@
 const { sequelize, testConnection } = require('./config/database');
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
 const authRoutes = require('./routes/auth-routes');
 const adminRoutes = require('./routes/admin-routes');
-require('dotenv').config();
-const express = require('express');
 
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
 
 // Mount routes
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/users/auth', authRoutes);
+app.use('/api/users/admin', adminRoutes);
 
 
 // Health check endpoint
@@ -25,7 +31,7 @@ app.use((err, req, res, next) => {
 
 
 
-app.listen(process.env.PORT || 3000, async () => {
+app.listen(process.env.PORT, async () => {
   try{
     await testConnection();
     console.log('Database connected...');
@@ -33,5 +39,5 @@ app.listen(process.env.PORT || 3000, async () => {
   } catch (error) {
     console.error('Database connection failed:', error);
   }
-  console.log(`Auth Service running on port ${process.env.PORT || 3000}`);
+  console.log(`Auth Service running on port ${process.env.PORT}`);
 });

@@ -1,15 +1,18 @@
 
 const userService = require('../services/auth-service');
-const { hashPassword } = require('../utils/helpers');
+const  AuthHelpers  = require('../utils/helpers');
+const  User  = require('../models/User');
 
 class AuthController {
   async register(req, res) {
     try {
-      const { email, password, username, role } = req.body;
+      const { name, email, password, phone, role } = req.body;
+      let hashedPassword = await AuthHelpers.hashPassword(password);
       const user = new User({
+        name,
         email,
-        password: hashPassword(password),
-        username,
+        password: hashedPassword,
+        phone,
         role
       });
       const result = await userService.register(user);
