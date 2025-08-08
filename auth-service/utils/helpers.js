@@ -5,6 +5,7 @@ const validator = require('validator');
 require('dotenv').config();
 
 
+
 /**
  * Helper utilities for Auth Service
  */
@@ -57,15 +58,7 @@ class AuthHelpers {
 
   // Remove sensitive fields
   delete sanitized.password;
-  delete sanitized.password_reset_token;
-  delete sanitized.password_reset_expires;
 
-  // Remove camelCase timestamp duplicates (keep snake_case only)
-  delete sanitized.createdAt;
-  delete sanitized.updatedAt;
-
-  // Optional: format created_at and updated_at without changing timezone
-  // Comment this block if you want raw timestamps
   if (sanitized.created_at) {
     sanitized.created_at = new Date(sanitized.created_at).toLocaleString('en-US');
   }
@@ -78,13 +71,7 @@ class AuthHelpers {
 }
 
 
-  /**
-   * Format error response
-   * @param {string} message - Error message
-   * @param {string} code - Error code
-   * @param {Object} details - Additional error details
-   * @returns {Object} - Formatted error response
-   */
+  
   static formatError(message, code = ERROR_CODES.INTERNAL_ERROR, details = null) {
     return {
       success: false,
