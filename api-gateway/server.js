@@ -3,6 +3,7 @@ const express = require('express');
 const corsMiddleware = require('./middleware/cors');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { authServiceProxy } = require('./middleware/proxy');
+const servicesRoutes = require('./routes/serviceRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,8 +24,7 @@ app.use((req, res, next) => {
 // === ROUTES ===
 
 // Use your existing proxy middleware
-app.use('/api/users', authServiceProxy);
-app.use('/api/*', servicesRoutes);
+app.use('/api/', servicesRoutes);
 
 
 
@@ -37,7 +37,7 @@ app.use(errorHandler);
 // === START SERVER ===
 
 app.listen(PORT, () => {
-  console.log(`🌐 API Gateway running on port ${PORT}`);
+  console.log(`API Gateway running on port ${PORT}`);
 
 });
 
