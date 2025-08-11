@@ -45,31 +45,48 @@ class AuthHelpers {
   static generateResetCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
+  static sanitizeUser(userData) {
+    if (!userData) return null;
 
-  /**
-   * Sanitize user data for response (remove sensitive fields)
-   * @param {Object} user - User object
-   * @returns {Object} - Sanitized user object
-   */
-  static sanitizeUser(user) {
-  if (!user) return null;
+    // Handle array of users
+    if (Array.isArray(userData)) {
+      return userData.map(user => {
+        if (!user) return null;
+        
+        const sanitized = { ...user.toJSON ? user.toJSON() : user };
+        
+        // Remove sensitive fields
+        delete sanitized.password;
+        
+        // Format timestamps
+        if (sanitized.created_at) {
+          sanitized.created_at = new Date(sanitized.created_at).toLocaleString('en-US');
+        }
+        
+        if (sanitized.updated_at) {
+          sanitized.updated_at = new Date(sanitized.updated_at).toLocaleString('en-US');
+        }
+        
+        return sanitized;
+      }).filter(user => user !== null); // Remove any null entries
+    }
 
-  const sanitized = { ...user.toJSON ? user.toJSON() : user };
+    // Handle single user
+    const sanitized = { ...userData.toJSON ? userData.toJSON() : userData };
 
-  // Remove sensitive fields
-  delete sanitized.password;
+    // Remove sensitive fields
+    delete sanitized.password;
 
-  if (sanitized.created_at) {
-    sanitized.created_at = new Date(sanitized.created_at).toLocaleString('en-US');
+    if (sanitized.created_at) {
+      sanitized.created_at = new Date(sanitized.created_at).toLocaleString('en-US');
+    }
+
+    if (sanitized.updated_at) {
+      sanitized.updated_at = new Date(sanitized.updated_at).toLocaleString('en-US');
+    }
+
+    return sanitized;
   }
-
-  if (sanitized.updated_at) {
-    sanitized.updated_at = new Date(sanitized.updated_at).toLocaleString('en-US');
-  }
-
-  return sanitized;
-}
-
 
   
   static formatError(message, code = ERROR_CODES.INTERNAL_ERROR, details = null) {
@@ -92,31 +109,19 @@ class AuthHelpers {
     };
   }
 
-  /**
-   * Validate email format
-   * @param {string} email - Email to validate
-   * @returns {boolean} - Email validity
-   */
+ 
   static isValidEmail(email) {
     return validator.isEmail(email);
   }
 
-  /**
-   * Validate phone number (basic validation for international format)
-   * @param {string} phone - Phone to validate
-   * @returns {boolean} - Phone validity
-   */
+  
   static isValidPhone(phone) {
-    // Basic international phone validation (supports +XXX format)
+    
     const phoneRegex = /^\+?[1-9]\d{1,14}$/;
     return phoneRegex.test(phone.replace(/\s+/g, ''));
   }
 
-  /**
-   * Validate password strength
-   * @param {string} password - Password to validate
-   * @returns {Object} - Validation result with isValid and errors
-   */
+
   static validatePassword(password) {
     const errors = [];
     
@@ -170,19 +175,8 @@ class AuthHelpers {
   }
 
   
-  /**   * Log authentication events
-   * @param {string} event - Event type (e.g., login, logout)
-   * @param {string} userId - User ID associated with the event
-   * @param {Object} metadata - Additional metadata for the event
-   */
-/** */  static generateSecureToken(length = 32) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  }
+  
+
 
   
 }

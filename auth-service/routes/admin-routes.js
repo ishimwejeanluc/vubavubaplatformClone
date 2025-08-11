@@ -4,10 +4,10 @@ const adminController = require('../controllers/admin-contoller');
 const router = express.Router();
 
 // Admin user management routes
-router.get('/', adminController.getAllUsers);
-router.get('/:id', adminController.getUser);
-router.put('/:id', adminController.updateUser);
-router.put('/:id/deactivate', adminController.deactivateUser);
-router.put('/:id/activate', adminController.activateUser);
+router.get('/getAll', adminController.getAllUsers);
+router.get('/getUsers/:id', adminController.getUser);
+router.put('/update/:id', adminController.updateUser);
+router.patch('/deactivate/:id', adminController.deactivateUser);
+router.patch('/activate/:id', adminController.activateUser);
 
 module.exports = router;

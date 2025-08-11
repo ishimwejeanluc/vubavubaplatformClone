@@ -1,6 +1,5 @@
 const { sequelize, testConnection } = require('./config/database');
 const express = require('express');
-const cors = require('cors');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth-routes');

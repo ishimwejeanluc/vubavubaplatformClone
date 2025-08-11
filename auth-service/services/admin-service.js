@@ -1,11 +1,15 @@
-const { User } = require('../models/User'); 
+const  User  = require('../models/User'); 
+const AuthHelpers = require('../utils/helpers');
 
 
 class AdminService {
   async getAllUsers() {
     try {
-      const users = await User.findAll();
-      return { statusCode: 200, body: users };
+      const users = await User.findAll(
+        
+      );
+      const sanitizedUsers = AuthHelpers.sanitizeUser(users);
+      return { statusCode: 200, body: sanitizedUsers };
     } catch (error) {
       return { statusCode: 500, body: { message: error.message } };
     }
@@ -42,19 +46,20 @@ class AdminService {
       if (!user) {
         return { statusCode: 404, body: { message: "User not found" } };
       }
-        await user.update({ isActive: false });
-        return { statusCode: 200, body: { message: "User deactivated successfully" } };
-      } catch (error) {
-        return { statusCode: 500, body: { message: error.message } };
-      }
+      await user.update({ is_active: false });
+      return { statusCode: 200, body: { message: "User deactivated successfully" } };
+    } catch (error) {
+      return { statusCode: 500, body: { message: error.message } };
     }
-    async activateUser(userId) {
-      try {
-        const user = await User.findByPk(userId);
-        if (!user) {
-          return { statusCode: 404, body: { message: "User not found" } };
+  }
+
+  async activateUser(userId) {
+    try {
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return { statusCode: 404, body: { message: "User not found" } };
         }
-        await user.update({ isActive: true });
+        await user.update({ is_active: true });
         return { statusCode: 200, body: { message: "User activated successfully" } };
       } catch (error) {
         return { statusCode: 500, body: { message: error.message } };
