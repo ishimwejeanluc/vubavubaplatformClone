@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const MenuItem = require('./menu-item');
 const { v4: uuidv4 } = require('uuid');
 
 const Merchant = sequelize.define('Merchant', {
@@ -35,7 +36,7 @@ const Merchant = sequelize.define('Merchant', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  phone_number: {
+  phone: {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
@@ -48,7 +49,11 @@ const Merchant = sequelize.define('Merchant', {
       }
     }
   },
-  
+  is_active: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    allowNull: false
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
@@ -61,11 +66,13 @@ const Merchant = sequelize.define('Merchant', {
   }
 }, {
   tableName: 'merchants',
-    timestamps: false,
+    timestamps: true,
 });
 
-
-
-
+Merchant.hasMany(MenuItem, {
+  foreignKey: 'merchant_id',
+  as: 'menuItems',
+  onDelete: 'CASCADE'
+});
 
 module.exports = Merchant;

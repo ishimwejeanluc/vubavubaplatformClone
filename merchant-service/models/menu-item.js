@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const Merchant = require('./merchant');
 const { v4: uuidv4 } = require('uuid');
 
 const MenuItem = sequelize.define('MenuItem', {
@@ -76,7 +77,13 @@ const MenuItem = sequelize.define('MenuItem', {
 }, 
 {
   tableName: 'menu_items',
-  timestamps: false,
+  timestamps: true,
+});
+
+
+MenuItem.belongsTo(Merchant, {
+  foreignKey: 'merchant_id',
+  as: 'merchant'
 });
 
 module.exports = MenuItem;
