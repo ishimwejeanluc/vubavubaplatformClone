@@ -81,9 +81,5 @@ const MenuItem = sequelize.define('MenuItem', {
 });
 
 
-MenuItem.belongsTo(Merchant, {
-  foreignKey: 'merchant_id',
-  as: 'merchant'
-});
 
 module.exports = MenuItem;

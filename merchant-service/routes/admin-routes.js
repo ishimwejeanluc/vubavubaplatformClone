@@ -4,8 +4,8 @@ const adminController = require('../controllers/admin-controller');
 const menuController = require('../controllers/menu-controller');
 
 // 👔 ADMIN ROUTES  (Menu)
-router.get('/admin/allMenus', menuController.getAllMenus);
-router.get('/admin/menubymerchant/:merchantId', menuController.getMerchantMenu); // GET /api/menu/admin/menubymerchant/:merchantId - Admin: Get merchant's menu items
+router.get('/allMenus', adminController.getAllMenus);
+router.get('/menubymerchant/:merchantId', adminController.getMerchantMenu); // GET /api/menu/admin/menubymerchant/:merchantId - Admin: Get merchant's menu items
 
 // 👔 ADMIN ROUTES (Merchant)
 router.get('/', adminController.getAllMerchants);                   // GET /api/merchants - Admin: Get all merchants

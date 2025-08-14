@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 
 const authenticateToken = (req, res, next) => {
@@ -42,6 +43,42 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
+const requireMerchant = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+  }
+
+  if (req.user.role !== 'merchant') {
+    return res.status(403).json({
+      success: false,
+      message: 'Merchant access required'
+    });
+  }
+
+  next();
+};
+
+ const requireCustomer = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+  }
+
+  if (req.user.role !== 'customer') {
+    return res.status(403).json({
+      success: false,
+      message: 'Customer access required'
+    });
+  }
+
+  next();
+}
+
 const requireRole = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -65,5 +102,7 @@ const requireRole = (...roles) => {
 module.exports = {
   authenticateToken,
   requireAdmin,
+  requireMerchant,
+  requireCustomer,
   requireRole
 };

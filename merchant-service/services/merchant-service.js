@@ -1,10 +1,7 @@
-const Merchant = require('../models/merchant');
-const MenuItem = require('../models/menu-item');
-const { Op } = require('sequelize');
+const { Merchant, MenuItem } = require('../models/association');
 
-const merchantService = {
+const menuService = {
   
-
   async createMerchant(merchantData) {
     try {
       // Check if user already has a merchant profile
@@ -440,7 +437,107 @@ const merchantService = {
         }
       };
     }
-  }
+  },
+
+  async getMenuItemById(itemId) {
+    try {
+      console.log(`[MENU SERVICE] Getting menu item by ID: ${itemId}`);
+
+      const menuItem = await MenuItem.findByPk(itemId, {
+        include: [
+          {
+            model: Merchant,
+            as: 'merchant',
+            attributes: ['id', 'business_name', 'is_active']
+          }
+        ]
+      });
+
+      if (!menuItem) {
+        return {
+          statusCode: 404,
+          body: {
+            success: false,
+            message: 'Menu item not found'
+          }
+        };
+      }
+
+      return {
+        statusCode: 200,
+        body: {
+          success: true,
+          message: 'Menu item retrieved successfully',
+          data: menuItem
+        }
+      };
+    } catch (error) {
+      console.error('Service error:', error);
+      return {
+        statusCode: 500,
+        body: {
+          success: false,
+          message: 'Internal server error',
+          error: error.message
+        }
+      };
+    }
+  },
+
+  async toggleAvailability(itemId) {
+    try {
+      console.log(`🔄 [MENU SERVICE] Toggling availability for item: ${itemId}`);
+
+      const menuItem = await MenuItem.findByPk(itemId);
+
+      if (!menuItem) {
+        return {
+          statusCode: 404,
+          body: {
+            success: false,
+            message: 'Menu item not found'
+          }
+        };
+      }
+
+      // Store the current state before toggling
+      const previousAvailability = menuItem.available;
+      
+      // Toggle the availability
+      const newAvailability = !menuItem.available;
+      await menuItem.update({ available: newAvailability });
+
+      // Refresh the menuItem to get updated data
+      await menuItem.reload();
+
+      return {
+        statusCode: 200,
+        body: {
+          success: true,
+          message: `Menu item ${newAvailability ? 'made available' : 'made unavailable'} successfully`,
+          data: {
+            id: menuItem.id,
+            name: menuItem.name,
+            available: menuItem.available, // This will now be the updated value
+            previousState: previousAvailability,
+            newState: newAvailability
+          }
+        }
+      };
+    } catch (error) {
+      console.error('Service error:', error);
+      return {
+        statusCode: 500,
+        body: {
+          success: false,
+          message: 'Internal server error',
+          error: error.message
+        }
+      };
+    }
+  },
+
+  
 };
 
-module.exports = merchantService;
+module.exports = menuService;

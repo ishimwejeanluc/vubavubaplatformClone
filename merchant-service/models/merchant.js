@@ -69,10 +69,6 @@ const Merchant = sequelize.define('Merchant', {
     timestamps: true,
 });
 
-Merchant.hasMany(MenuItem, {
-  foreignKey: 'merchant_id',
-  as: 'menuItems',
-  onDelete: 'CASCADE'
-});
+
 
 module.exports = Merchant;

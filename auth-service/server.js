@@ -1,7 +1,6 @@
 const { sequelize, testConnection } = require('./config/database');
 const express = require('express');
 require('dotenv').config();
-
 const authRoutes = require('./routes/auth-routes');
 const adminRoutes = require('./routes/admin-routes');
 
@@ -13,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // Mount routes
-app.use('/api/users/auth', authRoutes);
+app.use(['/api/auth', '/api/users'], authRoutes);
 app.use('/api/users/admin', adminRoutes);
 
 
