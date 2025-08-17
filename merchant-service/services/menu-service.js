@@ -52,34 +52,17 @@ const menuService = {
     }
   },
 
-  async getMenuItemsByMerchant(merchantId, queryParams) {
+  async getMenuItemsByMerchant(merchantId) {
     try {
-      const { available, search, page = 1, limit = 10 } = queryParams;
-      const offset = (page - 1) * limit;
-
       const whereClause = { merchant_id: merchantId };
 
-      // Filter by availability
-      if (available !== undefined) {
-        whereClause.available = available === 'true';
-      }
-
-      // Search by name
-      if (search) {
-        whereClause.name = {
-          [Op.iLike]: `%${search}%`
-        };
-      }
-
-      const { count, rows: menuItems } = await MenuItem.findAndCountAll({
+      const menuItems = await MenuItem.findAll({
         where: whereClause,
         include: [{
           model: Merchant,
           as: 'merchant',
           attributes: ['id', 'business_name', 'is_active']
         }],
-        limit: parseInt(limit),
-        offset: parseInt(offset),
         order: [['name', 'ASC']]
       });
 
@@ -89,12 +72,7 @@ const menuService = {
           success: true,
           data: {
             menuItems,
-            pagination: {
-              total: count,
-              page: parseInt(page),
-              limit: parseInt(limit),
-              totalPages: Math.ceil(count / limit)
-            }
+            total: menuItems.length
           }
         }
       };
@@ -268,29 +246,11 @@ const menuService = {
 
   // 🛍️ CUSTOMER BROWSING
 
-  async browseAllMenus(queryParams) {
+  async browseAllMenus() {
     try {
-      const { search, min_price, max_price, page = 1, limit = 20 } = queryParams;
-      const offset = (page - 1) * limit;
-
       const whereClause = { available: true };
 
-      // Search by name or description
-      if (search) {
-        whereClause[Op.or] = [
-          { name: { [Op.iLike]: `%${search}%` } },
-          { description: { [Op.iLike]: `%${search}%` } }
-        ];
-      }
-
-      // Price range filter
-      if (min_price || max_price) {
-        whereClause.price = {};
-        if (min_price) whereClause.price[Op.gte] = parseFloat(min_price);
-        if (max_price) whereClause.price[Op.lte] = parseFloat(max_price);
-      }
-
-      const { count, rows: menuItems } = await MenuItem.findAndCountAll({
+      const menuItems = await MenuItem.findAll({
         where: whereClause,
         include: [{
           model: Merchant,
@@ -298,8 +258,6 @@ const menuService = {
           where: { is_active: true },
           attributes: ['id', 'business_name', 'address']
         }],
-        limit: parseInt(limit),
-        offset: parseInt(offset),
         order: [['name', 'ASC']]
       });
 
@@ -309,12 +267,7 @@ const menuService = {
           success: true,
           data: {
             menuItems,
-            pagination: {
-              total: count,
-              page: parseInt(page),
-              limit: parseInt(limit),
-              totalPages: Math.ceil(count / limit)
-            }
+            total: menuItems.length
           }
         }
       };

@@ -3,7 +3,7 @@ const router = express.Router();
 const menuController = require('../controllers/menu-controller');
 
 
-router.get('/', menuController.browseMenus);                   
+router.get('/browse', menuController.browseMenus);                   
 router.get('/browse/:merchantId', menuController.browseMerchantMenu);
 
 

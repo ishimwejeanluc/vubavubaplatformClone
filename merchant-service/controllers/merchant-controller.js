@@ -37,7 +37,7 @@ class MerchantController  {
   // Update merchant profile
   async updateMerchantProfile(req, res) {
     try {
-      const result = await merchantService.updateMerchant(req.params.id, req.body);
+      const result = await merchantService.updateMerchant(req.params.merchantId, req.body);
       res.status(result.statusCode).json(result.body);
     } catch (error) {
       console.error('Update merchant profile error:', error);
@@ -112,7 +112,7 @@ class MerchantController  {
   async getMenuItem(req, res) {
     try {
       console.log(`📖 Getting menu item ${req.params.menuId}...`);
-      const result = await menuService.getMenuItemById(req.params.menuId);
+      const result = await merchantService.getMenuItemById(req.params.menuId);
       res.status(result.statusCode).json(result.body);
     } catch (error) {
       console.error('Get menu item error:', error);

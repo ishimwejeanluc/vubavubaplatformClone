@@ -1,4 +1,5 @@
 const { Merchant, MenuItem } = require('../models/association');
+const { Op } = require('sequelize');
 
 const menuService = {
   

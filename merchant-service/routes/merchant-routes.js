@@ -12,7 +12,7 @@ router.put('/:merchantId', merchantController.updateMerchantProfile);          /
 router.post('/createMerchantMenu', merchantController.createMenuItem);                       // POST /api/menu - Create menu item
 router.get('/getAllMerchantMenus/:merchantId', merchantController.getMerchantMenu);   // GET /api/menu/merchant/:merchantId - Get merchant's menu items
 router.get('/getMenuItem/:menuId', merchantController.getMenuItem);                        // GET /api/menu/:menuId - Get single menu item
-router.put('/:menuId', merchantController.updateMenuItem);                     // PUT /api/menu/:menuId - Update menu item
+router.put('/updateMenuItem/:menuId', merchantController.updateMenuItem);                     // PUT /api/menu/:menuId - Update menu item
 router.delete('/:menuId', merchantController.deleteMenuItem);                  // DELETE /api/menu/:menuId - Delete menu item
 router.patch('/:menuId/toggle-availability', merchantController.toggleAvailability) // PATCH /api/menu/:menuId/toggle-availability - Toggle menu item availability
 

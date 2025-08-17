@@ -12,10 +12,11 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Mount routes
-app.use('/api/merchants', merchantRoutes);
-app.use('/api/menu', menuRoutes);
-app.use('/api/merchants/admin',adminRoutes);
+// Mount routes - MOST SPECIFIC FIRST
+app.use('/api/merchants/admin', adminRoutes);
+app.use('/api/merchants/menu', menuRoutes);    
+app.use('/api/merchants', merchantRoutes);       
+                
 
 // Health check endpoint
 app.get('/health', (req, res) => {

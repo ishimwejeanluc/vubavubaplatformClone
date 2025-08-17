@@ -51,7 +51,7 @@ app.use((req, res, next) => {
 
 // Use your existing proxy middleware
 app.use(['/api/auth', '/api/users'], authServiceRoutes);
-app.use(['/api/merchants', '/api/menu'], merchantServiceRoutes);
+app.use('/api/merchants', merchantServiceRoutes);
 
 
 // Health check endpoint

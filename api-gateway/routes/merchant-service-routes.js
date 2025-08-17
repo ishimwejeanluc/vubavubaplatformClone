@@ -6,10 +6,10 @@ const { authenticateToken, requireCustomer,requireAdmin , requireMerchant} = req
 //admin Merchant Routes (JWT + Admin role required)
 router.use('/admin', authenticateToken, requireAdmin, merchantServiceProxy);
 
-// Merchant Routes (JWT + Merchant role required)  
-router.use('', authenticateToken, requireMerchant, merchantServiceProxy);
-
 // Public Menu Browsing Routes (JWT + Customer role required)
-router.use(['/','/browse/:merchantId'], authenticateToken, requireCustomer, merchantServiceProxy);
+router.use('/menu', authenticateToken, requireCustomer, merchantServiceProxy);
+
+// Merchant Routes (JWT + Merchant role required)
+router.use('/', authenticateToken, requireMerchant, merchantServiceProxy);
 
 module.exports = router;
