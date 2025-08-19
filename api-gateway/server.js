@@ -4,6 +4,8 @@ const corsMiddleware = require('./middleware/cors');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const authServiceRoutes = require('./routes/auth-service-routes');
 const merchantServiceRoutes = require('./routes/merchant-service-routes'); 
+const orderServiceRoutes = require('./routes/order-service-routes');
+const riderServiceRoutes = require('./routes/ride-service-routes');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -13,6 +15,9 @@ console.log('🚀 Starting API Gateway...');
 console.log('Environment variables:');
 console.log('- PORT:', PORT);
 console.log('- AUTH_SERVICE_URL:', process.env.AUTH_SERVICE_URL);
+console.log('- MERCHANT_SERVICE_URL:', process.env.MERCHANT_SERVICE_URL);
+console.log('- ORDER_SERVICE_URL:', process.env.ORDER_SERVICE_URL);
+console.log('- RIDER_SERVICE_URL:', process.env.RIDER_SERVICE_URL);
 
 // CORS
 app.use(corsMiddleware);
@@ -49,10 +54,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Use your existing proxy middleware
+// Service routes
 app.use(['/api/auth', '/api/users'], authServiceRoutes);
 app.use('/api/merchants', merchantServiceRoutes);
-
+app.use('/api/orders', orderServiceRoutes);
+app.use('/api/riders', riderServiceRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -62,7 +68,8 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     services: {
       auth: process.env.AUTH_SERVICE_URL,
-      merchant: process.env.MERCHANT_SERVICE_URL
+      merchant: process.env.MERCHANT_SERVICE_URL,
+      order: process.env.ORDER_SERVICE_URL
     },
     endpoints: {
       // Auth Service
@@ -80,9 +87,14 @@ app.get('/health', (req, res) => {
       'GET /api/merchants/:id': 'Get merchant profile (Merchant role required)',
       'PUT /api/merchants/:id': 'Update merchant profile (Merchant role required)',
       
-      // Merchant Service - Public Routes
-      'GET /api/menu': 'Browse all menus (Customer role required)',
-      'GET /api/menu/browse/:merchantId': 'Browse merchant menu (Customer role required)',
+      
+      // Order Service - Customer Routes
+      'POST /api/orders/customer/createOrder': 'Create new order (Customer role required)',
+      'GET /api/orders/customer/:orderId': 'Get specific order (Customer role required)',
+      
+      
+      // Order Service - Merchant Routes
+      
     }
   });
 });
@@ -101,12 +113,13 @@ app.listen(PORT, () => {
   console.log(`📋 Integrated Services:`);
   console.log(`├── Auth Service: ${process.env.AUTH_SERVICE_URL}`);
   console.log(`├── Merchant Service: ${process.env.MERCHANT_SERVICE_URL}`);
+  console.log(`├── Order Service: ${process.env.ORDER_SERVICE_URL}`);
   console.log(`📋 Available Routes:`);
   console.log(`├── Health: GET http://localhost:${PORT}/health`);
-  console.log(`├── Auth: /api/users/*`);
-  console.log(`├── Merchants (Admin): /api/merchants/admin/*`);
+  console.log(`├── Auth: /api/auth/*, /api/users/*`);
   console.log(`├── Merchants: /api/merchants/*`);
-  console.log(`└── Menus (Public): /api/menu/*`);
+  console.log(`├── Orders (Customer): /api/orders/customer/*`);
+  console.log(`└── Orders (Merchant): /api/orders/merchant/*`);
   console.log('===============================\n');
 });
 

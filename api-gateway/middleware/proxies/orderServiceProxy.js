@@ -1,20 +1,22 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 require('dotenv').config();
 
-const merchantServiceProxy = createProxyMiddleware({
-  target: process.env.MERCHANT_SERVICE_URL,
+const orderServiceProxy = createProxyMiddleware({
+  target: process.env.ORDER_SERVICE_URL,
   changeOrigin: true,
   timeout: 30000,
   
   onProxyReq: (proxyReq, req, res) => {
-    console.log('\n===  MERCHANT PROXY REQUEST ===');
+    console.log('\n===  ORDER PROXY REQUEST ===');
     console.log('Original URL:', req.originalUrl);
     console.log('Proxy URL:', req.url);
     console.log('Method:', req.method);
-    console.log('Target:', process.env.MERCHANT_SERVICE_URL);
+    console.log('Target:', process.env.ORDER_SERVICE_URL);
     console.log('Request Body:', req.body);
 
-        // 1. Set user headers first (if available)
+    // ✅ SET ALL HEADERS FIRST (before any body operations)
+    
+    // 1. Set user headers first (if available)
     if (req.user) {
       console.log('Setting user headers:', req.user);
       proxyReq.setHeader('X-User-Id',  req.user.id);
@@ -42,33 +44,33 @@ const merchantServiceProxy = createProxyMiddleware({
   },
   
   onProxyRes: (proxyRes, req, res) => {
-    console.log('\n===  MERCHANT PROXY RESPONSE ===');
+    console.log('\n===  ORDER PROXY RESPONSE ===');
     console.log('Status Code:', proxyRes.statusCode);
     delete proxyRes.headers['x-powered-by'];
     console.log('=================================\n');
   },
   
   onError: (err, req, res) => {
-    console.error('\n===  MERCHANT PROXY ERROR ===');
+    console.error('\n===  ORDER PROXY ERROR ===');
     console.error('Error:', err.message);
     console.error('Error Code:', err.code);
     console.error('Request URL:', req.originalUrl);
-    console.error('Target:', process.env.MERCHANT_SERVICE_URL);
+    console.error('Target:', process.env.ORDER_SERVICE_URL);
     console.error('====================\n');
     
     if (!res.headersSent) {
       res.status(502).json({
         success: false,
-        message: 'Merchant service unavailable',
+        message: 'Order service unavailable',
         error: err.message,
-        target: process.env.MERCHANT_SERVICE_URL,
+        target: process.env.ORDER_SERVICE_URL,
       });
     }
   }
 });
 
-console.log('\n=== MERCHANT PROXY CONFIGURATION ===');
-console.log('Merchant Service Target:', process.env.MERCHANT_SERVICE_URL);
+console.log('\n=== ORDER PROXY CONFIGURATION ===');
+console.log('Order Service Target:', process.env.ORDER_SERVICE_URL);
 console.log('====================================\n');
 
-module.exports = merchantServiceProxy;
+module.exports = orderServiceProxy;

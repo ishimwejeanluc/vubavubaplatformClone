@@ -1,8 +1,12 @@
 // Central export for all proxy middleware
 const authServiceProxy = require('./authServiceProxy');
 const merchantServiceProxy = require('./merchantServiceProxy');
+const orderServiceProxy = require('./orderServiceProxy');
+const riderServiceProxy = require('./riderServiceProxy');
 
 module.exports = {
   authServiceProxy,
-  merchantServiceProxy
+  merchantServiceProxy,
+  orderServiceProxy,
+  riderServiceProxy
 };
