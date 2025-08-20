@@ -6,7 +6,7 @@ const MenuItem = require('../models/menu-item');
 
 class AdminService {
 
-  // 👔 ADMIN MERCHANT MANAGEMENT
+  // ADMIN MERCHANT MANAGEMENT
   async getAllMerchants() {
     try {
       const merchants = await Merchant.findAll();
@@ -42,7 +42,7 @@ class AdminService {
     }
   }
 
-  // 👔 ADMIN MENU MANAGEMENT
+  // ADMIN MENU MANAGEMENT
   async getAllMenus() {
     try {
       const menus = await MenuItem.findAll();

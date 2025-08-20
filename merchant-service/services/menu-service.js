@@ -244,7 +244,7 @@ const menuService = {
     }
   },
 
-  // 🛍️ CUSTOMER BROWSING
+  // CUSTOMER BROWSING
 
   async browseAllMenus() {
     try {
@@ -371,7 +371,7 @@ const menuService = {
     }
   },
 
-  // 👔 ADMIN FEATURES
+  // ADMIN FEATURES
 
   async getAllMenus(queryParams) {
     try {

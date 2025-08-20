@@ -81,7 +81,7 @@ class MerchantController  {
   }
     async deleteMenuItem(req, res) {
     try {
-      console.log(`🗑️ Deleting menu item ${req.params.id}...`);
+  console.log(`Deleting menu item ${req.params.id}...`);
       const result = await menuService.deleteMenuItem(req.params.id);
       res.status(result.statusCode).json(result.body);
     } catch (error) {
@@ -96,7 +96,7 @@ class MerchantController  {
 
   async createMenuItem(req, res) {
     try {
-      console.log(`🍽️ Creating menu item for merchant...`);
+  console.log(`Creating menu item for merchant...`);
       const result = await menuService.createMenuItem(req.body);
       res.status(result.statusCode).json(result.body);
     } catch (error) {
@@ -111,7 +111,7 @@ class MerchantController  {
 
   async getMenuItem(req, res) {
     try {
-      console.log(`📖 Getting menu item ${req.params.menuId}...`);
+  console.log(`Getting menu item ${req.params.menuId}...`);
       const result = await merchantService.getMenuItemById(req.params.menuId);
       res.status(result.statusCode).json(result.body);
     } catch (error) {
@@ -126,7 +126,7 @@ class MerchantController  {
 
   async updateMenuItem(req, res) {
     try {
-      console.log(`📝 Updating menu item ${req.params.menuId}...`);
+  console.log(`Updating menu item ${req.params.menuId}...`);
       const result = await menuService.updateMenuItem(req.params.menuId, req.body);
       res.status(result.statusCode).json(result.body);
     } catch (error) {

@@ -199,7 +199,7 @@ const menuService = {
     }
   },
 
-  // 👔 ADMIN FEATURES
+  // ADMIN FEATURES
 
   async getAllMerchants(queryParams) {
     try {
@@ -487,7 +487,7 @@ const menuService = {
 
   async toggleAvailability(itemId) {
     try {
-      console.log(`🔄 [MENU SERVICE] Toggling availability for item: ${itemId}`);
+  console.log(`[MENU SERVICE] Toggling availability for item: ${itemId}`);
 
       const menuItem = await MenuItem.findByPk(itemId);
 

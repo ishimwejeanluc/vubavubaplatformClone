@@ -11,7 +11,7 @@ const app = express();
 const PORT = process.env.PORT;
 app.disable('x-powered-by'); 
 
-console.log('🚀 Starting API Gateway...');
+console.log('Starting API Gateway...');
 console.log('Environment variables:');
 console.log('- PORT:', PORT);
 console.log('- AUTH_SERVICE_URL:', process.env.AUTH_SERVICE_URL);
@@ -44,7 +44,7 @@ app.use((req, res, next) => {
   // Log when response is sent
   const originalSend = res.send;
   res.send = function(data) {
-    console.log('\n=== 📤 OUTGOING RESPONSE ===');
+  console.log('\n=== OUTGOING RESPONSE ===');
     console.log('Status Code:', res.statusCode);
     console.log('Response Data:', data);
     console.log('=========================\n');
@@ -108,13 +108,13 @@ app.use(errorHandler);
 // === START SERVER ===
 
 app.listen(PORT, () => {
-  console.log('\n=== 🚪 API GATEWAY READY ===');
+  console.log('\n=== API GATEWAY READY ===');
   console.log(`API Gateway running on port ${PORT}`);
-  console.log(`📋 Integrated Services:`);
+  console.log(`Integrated Services:`);
   console.log(`├── Auth Service: ${process.env.AUTH_SERVICE_URL}`);
   console.log(`├── Merchant Service: ${process.env.MERCHANT_SERVICE_URL}`);
   console.log(`├── Order Service: ${process.env.ORDER_SERVICE_URL}`);
-  console.log(`📋 Available Routes:`);
+  console.log(`Available Routes:`);
   console.log(`├── Health: GET http://localhost:${PORT}/health`);
   console.log(`├── Auth: /api/auth/*, /api/users/*`);
   console.log(`├── Merchants: /api/merchants/*`);

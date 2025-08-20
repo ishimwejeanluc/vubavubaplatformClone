@@ -14,7 +14,7 @@ const riderServiceProxy = createProxyMiddleware({
     console.log('Target:', process.env.RIDER_SERVICE_URL);
     console.log('Request Body:', req.body);
 
-    // ✅ SET ALL HEADERS FIRST (before any body operations)
+  // SET ALL HEADERS FIRST (before any body operations)
     
     // 1. Set user headers first (if available)
     if (req.user) {

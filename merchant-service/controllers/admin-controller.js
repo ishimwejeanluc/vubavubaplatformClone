@@ -6,7 +6,7 @@ class AdminController  {
     //Get all menus (Admin)
   async getAllMenus(req, res) {
     try {
-      console.log('📋 Admin: Getting all menus...');
+  console.log('Admin: Getting all menus...');
       const result = await adminService.getAllMenus();
       res.status(result.statusCode).json(result.body);
     } catch (error) {

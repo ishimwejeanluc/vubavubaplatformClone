@@ -10,14 +10,14 @@ const authServiceProxy = createProxyMiddleware({
   timeout: 30000,
 
   onProxyReq: (proxyReq, req, res) => {
-    console.log('\n=== 🔄 AUTH PROXY REQUEST ===');
+  console.log('\n=== AUTH PROXY REQUEST ===');
     console.log('Original URL:', req.originalUrl);
     console.log('Proxy URL:', req.url);
     console.log('Method:', req.method);
     console.log('Target:', process.env.AUTH_SERVICE_URL);
     console.log('Request Body:', req.body);
 
-    // ✅ 1. Set user headers first (if available)
+  // 1. Set user headers first (if available)
     if (req.user) {
       console.log('Setting user headers:', req.user);
       proxyReq.setHeader('X-User-Id', req.user.id);
@@ -25,12 +25,12 @@ const authServiceProxy = createProxyMiddleware({
       proxyReq.setHeader('X-User-Email', req.user.email);
     }
 
-    // ✅ 2. Set content headers (if body exists)
+  // 2. Set content headers (if body exists)
     if (req.body && Object.keys(req.body).length > 0) {
       proxyReq.setHeader('Content-Type', 'application/json');
     }
 
-    // ✅ 3. THEN write the body (this flushes headers)
+  // 3. THEN write the body (this flushes headers)
     if (req.body && Object.keys(req.body).length > 0) {
       const bodyData = JSON.stringify(req.body);
       console.log('Forwarding body data:', bodyData);
@@ -43,14 +43,14 @@ const authServiceProxy = createProxyMiddleware({
   },
 
   onProxyRes: (proxyRes, req, res) => {
-    console.log('\n=== 📤 AUTH PROXY RESPONSE ===');
+  console.log('\n=== AUTH PROXY RESPONSE ===');
     console.log('Status Code:', proxyRes.statusCode);
     console.log('Response Headers (before):', proxyRes.headers);
     delete proxyRes.headers['x-powered-by'];
   },
 
   onError: (err, req, res) => {
-    console.error('\n=== 💥 AUTH PROXY ERROR ===');
+  console.error('\n=== AUTH PROXY ERROR ===');
     console.error('Error:', err.message);
     console.error('Error Code:', err.code);
     console.error('Request URL:', req.originalUrl);
