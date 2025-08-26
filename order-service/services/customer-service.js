@@ -40,7 +40,12 @@ class CustomerOrderService {
           await transaction.commit();
 
           // Publish order.waitingpayment event
-          await orderWaitingPayment.publish({ orderId: newOrder.id, amount: newOrder.total_price });
+          try {
+            await orderWaitingPayment.publish({ orderId: newOrder.id, amount: newOrder.total_price });
+            console.log(`[EVENT SENT] order.waitingpayment for orderId: ${newOrder.id}, amount: ${newOrder.total_price}`);
+          } catch (eventError) {
+            console.error(`[EVENT ERROR] Failed to publish order.waitingpayment for orderId: ${newOrder.id}.`, eventError);
+          }
 
           return await this.getOrderById(newOrder.id, customer_id);
         } catch (error) {

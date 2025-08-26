@@ -1,7 +1,8 @@
 
+Payment = require('../models/payments');
+const {PAYMENT_STATUS} = require('../utils/Enums/payment-status');
+const {PAYMENT_METHOD} = require('../utils/Enums/payment-method');
 
-const EventListener = require('../events/EventListener');
-const eventListener = new EventListener();
 
 class PaymentService {
   async pay({ order_id, amount, transaction_id }) {
@@ -16,17 +17,14 @@ class PaymentService {
       status: PAYMENT_STATUS.PAID
     });
   }
-}
 
-function handleOrderWaitingPayment(payload) {
-  return Payment.create({
-    order_id: payload.orderId,
-    amount: payload.amount,
-    status: PAYMENT_STATUS.PENDING,
-    method: null
-  });
+  handleOrderWaitingPayment(orderId, amount) {
+    return Payment.create({
+      order_id: orderId,
+      amount: amount,
+      status: PAYMENT_STATUS.PENDING,
+    });
+  }
 }
-
-eventListener.onOrderWaitingPayment(handleOrderWaitingPayment);
 
 module.exports = new PaymentService();

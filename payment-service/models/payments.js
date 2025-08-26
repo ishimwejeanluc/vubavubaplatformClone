@@ -23,7 +23,7 @@ const Payment = sequelize.define('Payment', {
     method: {
         type: DataTypes.ENUM,
         values: Object.values(PAYMENT_METHOD),
-        allowNull: false,
+        allowNull: true,
         validate: {
             isIn: [Object.values(PAYMENT_METHOD)]
         }
@@ -38,7 +38,7 @@ const Payment = sequelize.define('Payment', {
     },
     transaction_id: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true,
         validate: {
             notEmpty: {
