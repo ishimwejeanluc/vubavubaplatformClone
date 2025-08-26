@@ -22,13 +22,5 @@
   "devDependencies": {
     "nodemon": "^3.0.1",
     "jest": "^29.6.2"
-  },
-  "keywords": [
-    "api-gateway",
-    "microservices",
-    "proxy",
-    "food-delivery"
-  ],
-  "author": "VubaVuba Team",
-  "license": "MIT"
+  }
 }

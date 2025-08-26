@@ -2,51 +2,54 @@ const { Order, OrderItem, OrderHistory } = require('../models/association');
 const { ORDER_STATUS } = require('../utils/Enums/order-status');
 const { PAYMENT_STATUS } = require('../utils/Enums/payment-status');
 const { sequelize } = require('../config/database');
+const {OrderWaitingPaymentEventPublisher} = require('../events/publishedevent/EventPublish');
+const orderWaitingPayment = new OrderWaitingPaymentEventPublisher();
 
 class CustomerOrderService {
   // Create a new order with order items (after payment is completed)
-  async createOrder(newOrderData) {
-    const transaction = await sequelize.transaction();
-    
-    try {
-      const { customer_id, merchant_id, delivery_address, orderItems, total_price } = newOrderData;
-      
-      // Create the order
-      const newOrder = await Order.create({
-        customer_id,
-        merchant_id,
-        delivery_address,
-        total_price,
-        status: ORDER_STATUS.WAITING,
-        payment_status: PAYMENT_STATUS.PENDING
-      }, { transaction });
+    async createOrder(orderData) {
+        const transaction = await sequelize.transaction();
+        try {
+          const { customer_id, merchant_id, delivery_address, orderItems, total_price } = orderData;
+          // Create the order with status WAITING (waiting payment)
+          const newOrder = await Order.create({
+            customer_id,
+            merchant_id,
+            delivery_address,
+            total_price,
+            status: ORDER_STATUS.WAITING,
+            payment_status: PAYMENT_STATUS.PENDING
+          }, { transaction });
 
-      // Create order items
-      const orderItemsData = orderItems.map(item => ({
-        order_id: newOrder.id,
-        menu_item_id: item.menu_item_id,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.quantity * item.unit_price
-      }));
+          // Create order items
+          const orderItemsData = orderItems.map(item => ({
+            order_id: newOrder.id,
+            menu_item_id: item.menu_item_id,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            total_price: item.quantity * item.unit_price
+          }));
+          await OrderItem.bulkCreate(orderItemsData, { transaction });
 
-      await OrderItem.bulkCreate(orderItemsData, { transaction });
+          // Create initial order history entry
+          await OrderHistory.create({
+            order_id: newOrder.id,
+            status: ORDER_STATUS.WAITING
+          }, { transaction });
 
-      // Create initial order history entry
-      await OrderHistory.create({
-        order_id: newOrder.id,
-        status: ORDER_STATUS.WAITING
-      }, { transaction });
+          await transaction.commit();
 
-      await transaction.commit();
+          // Publish order.waitingpayment event
+          await orderWaitingPayment.publish({ orderId: newOrder.id, amount: newOrder.total_price });
 
-      // Return order with its items
-      return await this.getOrderById(newOrder.id, customer_id);
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
-  }
+          return await this.getOrderById(newOrder.id, customer_id);
+        } catch (error) {
+          if (!transaction.finished) {
+            await transaction.rollback();
+          }
+          throw error;
+        }
+      }
 
   // Get order by ID (customer can only access their own orders)
   async getOrderById(orderId, customerId) {

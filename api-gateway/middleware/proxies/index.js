@@ -3,10 +3,12 @@ const authServiceProxy = require('./authServiceProxy');
 const merchantServiceProxy = require('./merchantServiceProxy');
 const orderServiceProxy = require('./orderServiceProxy');
 const riderServiceProxy = require('./riderServiceProxy');
+const paymentServiceProxy = require('./paymentServiceProxy');
 
 module.exports = {
   authServiceProxy,
   merchantServiceProxy,
   orderServiceProxy,
-  riderServiceProxy
+  riderServiceProxy,
+  paymentServiceProxy
 };

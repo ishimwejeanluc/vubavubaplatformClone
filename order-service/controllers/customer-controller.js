@@ -1,5 +1,5 @@
 const customerService = require('../services/customer-service');
-const { validationResult } = require('express-validator');
+
 
 class CustomerOrderController {
   

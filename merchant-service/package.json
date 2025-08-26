@@ -12,18 +12,10 @@
     "db:seed": "npx sequelize-cli db:seed:all",
     "db:reset": "npx sequelize-cli db:drop && npm run db:create && npm run db:migrate && npm run db:seed"
   },
-  "keywords": [
-    "merchant",
-    "restaurant",
-    "menu",
-    "microservices",
-    "postgresql",
-    "sequelize",
-    "food-delivery"
-  ],
   "author": "VubaVuba Team",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "^0.10.9",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.18.2",

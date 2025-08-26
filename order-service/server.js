@@ -41,17 +41,16 @@ app.listen(process.env.PORT, async () => {
   try {
     await testConnection();
     console.log('Database connected...');
-    sequelize.sync({ alter: true });
+    await sequelize.sync({ alter: true });
     console.log('Database synced...');
   } catch (error) {
     console.error('Database connection failed:', error);
   }
-  
-  console.log('\n===  MERCHANT SERVICE READY ===');
+  console.log('\n=== ORDER SERVICE READY ===');
   console.log(`Order Service running on port ${process.env.PORT}`);
-  console.log(`Available endpoints:`);
+  console.log('Available endpoints:');
   console.log(`├── Health: GET http://localhost:${process.env.PORT}/health`);
-  console.log(`├── Orders: /api/orders/*`);
-  console.log(`└── Menu Items: /api/menu/*`);
+  console.log('├── Orders: /api/orders/*');
+  console.log('└── Menu Items: /api/menu/*');
   console.log('=================================\n');
 });

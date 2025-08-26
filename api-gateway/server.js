@@ -6,6 +6,7 @@ const authServiceRoutes = require('./routes/auth-service-routes');
 const merchantServiceRoutes = require('./routes/merchant-service-routes'); 
 const orderServiceRoutes = require('./routes/order-service-routes');
 const riderServiceRoutes = require('./routes/ride-service-routes');
+const paymentServiceRoutes = require ('./routes/payment-service-routes');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -59,6 +60,7 @@ app.use(['/api/auth', '/api/users'], authServiceRoutes);
 app.use('/api/merchants', merchantServiceRoutes);
 app.use('/api/orders', orderServiceRoutes);
 app.use('/api/riders', riderServiceRoutes);
+app.use('/api/payments', paymentServiceRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -114,6 +116,9 @@ app.listen(PORT, () => {
   console.log(`├── Auth Service: ${process.env.AUTH_SERVICE_URL}`);
   console.log(`├── Merchant Service: ${process.env.MERCHANT_SERVICE_URL}`);
   console.log(`├── Order Service: ${process.env.ORDER_SERVICE_URL}`);
+  console.log(`├── Rider Service: ${process.env.RIDER_SERVICE_URL}`);
+  console.log(`└── Payment Service: ${process.env.PAYMENT_SERVICE_URL}`);
+
   console.log(`Available Routes:`);
   console.log(`├── Health: GET http://localhost:${PORT}/health`);
   console.log(`├── Auth: /api/auth/*, /api/users/*`);

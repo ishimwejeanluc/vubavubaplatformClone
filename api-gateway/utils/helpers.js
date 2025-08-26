@@ -89,7 +89,8 @@ const validateEnvironment = () => {
     'ORDER_SERVICE_URL',
     'PAYMENT_SERVICE_URL',
     'RIDER_SERVICE_URL',
-    'NOTIFICATION_SERVICE_URL'
+    'NOTIFICATION_SERVICE_URL',
+    'PAYMENT_SERVICE_URL'
   ];
 
   const missing = required.filter(env => !process.env[env]);
