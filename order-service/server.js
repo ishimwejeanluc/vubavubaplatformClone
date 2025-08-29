@@ -4,6 +4,7 @@ require('dotenv').config();
 const {order , MenuItems} = require('./models/association');
 const customerRoutes = require('./routes/customer-routes');
 const merchantRoutes = require('./routes/merchant-routes');
+const { initializeEventListeners } = require('./events/eventlistener/index');
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.use(express.urlencoded({ extended: true }));
 // Mount routes - MOST SPECIFIC FIRST
 app.use('/api/orders/customer', customerRoutes);
 app.use('/api/orders/merchant', merchantRoutes);
+
+initializeEventListeners();
 
 
 // Health check endpoint

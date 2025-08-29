@@ -1,6 +1,8 @@
 const { Rider, DeliveryAssignment } = require('../models/association');
 const { VEHICLE_TYPE } = require('../utils/Enums/vehicle-type');
 const { DELIVERY_STATUS } = require('../utils/Enums/delivery-status');
+const { OrderDeliveredEventPublisher} = require('../events/eventpublisher/index');
+const orderDeliveredEventPublisher = new OrderDeliveredEventPublisher();
 
 class RiderService {
     // Create a new rider
@@ -332,6 +334,53 @@ class RiderService {
                     success: false, 
                     message: "Internal server error" 
                 } 
+            };
+        }
+    }    
+        
+    async orderDelivered(assignmentId) {
+        try {
+            const assignment = await DeliveryAssignment.findOne({ where: { id: assignmentId } });
+            if (!assignment) {
+                return {
+                    statusCode: 404,
+                    body: {
+                        success: false,
+                        message: "Delivery assignment not found"
+                    }
+                };
+            }
+
+            await assignment.update({ delivery_status: DELIVERY_STATUS.DELIVERED });
+
+            // Set rider availability to true
+            const rider = await Rider.findByPk(assignment.rider_id);
+            if (rider) {
+                await rider.update({ is_available: true });
+            }
+            // Publish order.delivered event
+            orderDeliveredEventPublisher.publish({
+                assignmentId: assignment.id,
+                riderId: rider.id,
+                orderId: assignment.order_id
+            });
+
+            return {
+                statusCode: 200,
+                body: {
+                    success: true,
+                    message: "Delivery marked as delivered successfully and rider set to available",
+                    data: assignment
+                }
+            };
+        } catch (error) {
+            console.error('Error marking delivery as delivered:', error);
+            return {
+                statusCode: 500,
+                body: {
+                    success: false,
+                    message: "Internal server error"
+                }
             };
         }
     }

@@ -1,7 +1,9 @@
 const { Order, OrderItem, OrderHistory } = require('../models/association');
 const { ORDER_STATUS } = require('../utils/Enums/order-status');
 const { sequelize } = require('../config/database');
+const { OrderReadyEventPublisher,OrderDeliveredEventPublisher} = require('../events/publishedevent/index');
 
+const orderReadyPublisher = new OrderReadyEventPublisher();
 class MerchantOrderService {
   // Get order by ID (merchant can only access their own orders)
   async getOrderById(orderId, merchantId) {
@@ -53,39 +55,37 @@ class MerchantOrderService {
   }
 
   // Update order status (merchant workflow)
+  // Update an order's status and publish the corresponding event
   async updateOrderStatus(orderId, newStatus, merchantId) {
+    // Validate the new status against the enum
+    if (!Object.values(ORDER_STATUS).includes(newStatus)) {
+      throw new Error(`Invalid status: ${newStatus}`);
+    }
+
     const transaction = await sequelize.transaction();
-    
     try {
-      const order = await Order.findOne({
-        where: { 
-          id: orderId,
-          merchant_id: merchantId 
-        }
-      });
-
-      if (!order) {
-        throw new Error('Order not found or you are not authorized to update this order');
-      }
-
-      // Check if status transition is valid
-      if (!this.isValidStatusTransition(order.status, newStatus)) {
-        throw new Error(`Invalid status transition from ${order.status} to ${newStatus}`);
-      }
+      const order = await Order.findByPk(orderId);
+      if (!order) throw new Error('Order not found');
 
       // Update order status
-      await order.update({ status: newStatus }, { transaction });
-
-      // Create order history entry
-      await OrderHistory.create({
+          await order.update({ status: newStatus }, { transaction });
+      if (newStatus === ORDER_STATUS.READY) {
+        
+        await orderReadyPublisher.publish({ orderId, merchantId });
+      } 
+// Add order history record for the new status
+ await OrderHistory.create({
         order_id: orderId,
         status: newStatus
       }, { transaction });
+    
+          
+        
 
       await transaction.commit();
-
       return await this.getOrderById(orderId, merchantId);
     } catch (error) {
+      console.log(error);
       await transaction.rollback();
       throw error;
     }

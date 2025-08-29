@@ -2,8 +2,7 @@ const { sequelize, testConnection } = require('./config/database');
 const express = require('express');
 require('dotenv').config();
 const paymentRoutes = require('./routes/payment-routes');
-const OrderWaitingEventListener = require('./events/order-waiting-event-listener');
-const orderWaitingListener = new OrderWaitingEventListener();
+const { initializeEventListeners } = require('./events/eventlistener/index');
 
 const app = express();
 
@@ -13,9 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 // Mount payment routes
 app.use('/api/payments', paymentRoutes);
 
-
-orderWaitingListener.handleOrderWaitingPayment();
-console.log('OrderWaitingEventListener started and listening for order.waiting events.');
+initializeEventListeners();
 
 
 

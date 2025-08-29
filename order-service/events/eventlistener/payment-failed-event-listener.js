@@ -1,5 +1,5 @@
 const { listen } = require('../../config/rabbitmq');
-const orderService = require('../../services/order-service');
+const eventListenerService = require('../../services/event-listener-service');
 
 
 class PaymentFailedEventListener {
@@ -7,7 +7,7 @@ class PaymentFailedEventListener {
         const handlerMap = {
             'payment.failed': async (msg) => {
                 const { orderId } = msg;
-                await orderService.processPaymentFailed(orderId);
+                await eventListenerService.processPaymentFailed(orderId);
             }
         };
         listen(handlerMap);

@@ -42,8 +42,7 @@ class MerchantOrderController {
       }
 
       const { orderId } = req.params;
-      const { status } = req.body;
-      const merchantId = req.user.id;
+      const { merchantId, status } = req.body;
 
       const updatedOrder = await merchantService.updateOrderStatus(orderId, status, merchantId);
 

@@ -1,6 +1,8 @@
 const { Rider } = require('../models/association');
 const { DeliveryAssignment } = require('../models/association');
 const { DELIVERY_STATUS } = require('../utils/Enums/delivery-status');
+const { OrderAssignedEventPublisher } = require('../events/eventpublisher/index');
+const orderAssignedEventPublisher = new OrderAssignedEventPublisher();
 
 class AdminService {
     // Get all available riders
@@ -103,6 +105,12 @@ class AdminService {
 
             // Update rider availability
             await rider.update({ is_available: false });
+            
+            await orderAssignedEventPublisher.publish({
+                assignmentId: deliveryAssignment.id,
+                riderId: rider.id,
+                orderId: order_id
+            });
 
             return { 
                 statusCode: 201, 

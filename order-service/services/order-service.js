@@ -3,81 +3,12 @@ const { ORDER_STATUS } = require('../utils/Enums/order-status');
 const { PAYMENT_STATUS } = require('../utils/Enums/payment-status');
 const { sequelize } = require('../config/database');
 
-
-
-
 class OrderService {
+  
+
   // Create a new order with order items (status: WAITING)
   
 
-  // Process payment success: update order status to PENDING and publish order.placed event
-  async processPaymentSuccess(orderId) {
-    const transaction = await sequelize.transaction();
-    try {
-      const order = await Order.findByPk(orderId, {
-        include: [{ model: OrderItem, as: 'orderItems' }]
-      });
-      if (!order) throw new Error('Order not found');
-
-      // Update order status to PENDING and payment_status to PAID
-      await order.update({ status: ORDER_STATUS.PENDING, payment_status: PAYMENT_STATUS.PAID }, { transaction });
-
-      // Add order history
-      await OrderHistory.create({
-        order_id: orderId,
-        status: ORDER_STATUS.PENDING
-      }, { transaction });
-
-      await transaction.commit();
-
-      // Publish order.placed event with orderMenu (orderItems)
-      const eventPublisher = new EventPublisher();
-      const orderMenu = order.orderItems.map(item => ({
-        menu_item_id: item.menu_item_id,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.total_price
-      }));
-      await eventPublisher.orderPlaced({ orderId, orderMenu });
-      return await this.getOrderById(orderId);
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
-  }
-
-  async processPaymentFailed(orderId) {
-    const transaction = await sequelize.transaction();
-    try {
-      const order = await Order.findByPk(orderId);
-      if (!order) throw new Error('Order not found');
-
-      // Update order status to PENDING and payment_status to FAILED
-      await order.update({ status: ORDER_STATUS.CANCELLED, payment_status: PAYMENT_STATUS.FAILED }, { transaction });
-
-      // Add order history
-      await OrderHistory.create({
-        order_id: orderId,
-        status: ORDER_STATUS.CANCELLED
-      }, { transaction });
-
-      await transaction.commit();
-      
-    // Publish order.cancelled event
-      const eventPublisher = new EventPublisher();
-      orderMenu = order.orderItems.map(item => ({
-        menu_item_id: item.menu_item_id,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.total_price
-      }));
-      await eventPublisher.orderCancelled({ orderId, orderMenu });
-      return await this.getOrderById(orderId);
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
-  }
 
   // Get order by ID with items and history
   async getOrderById(orderId) {
@@ -314,6 +245,11 @@ class OrderService {
 
     return stats;
   }
-}
+  
+  
 
-module.exports = new OrderService();
+  
+  }
+
+
+module.exports = OrderService;

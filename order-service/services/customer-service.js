@@ -2,7 +2,7 @@ const { Order, OrderItem, OrderHistory } = require('../models/association');
 const { ORDER_STATUS } = require('../utils/Enums/order-status');
 const { PAYMENT_STATUS } = require('../utils/Enums/payment-status');
 const { sequelize } = require('../config/database');
-const {OrderWaitingPaymentEventPublisher} = require('../events/publishedevent/EventPublish');
+const {OrderWaitingPaymentEventPublisher} = require('../events/publishedevent/index');
 const orderWaitingPayment = new OrderWaitingPaymentEventPublisher();
 
 class CustomerOrderService {

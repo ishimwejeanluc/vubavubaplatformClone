@@ -1,6 +1,7 @@
 const express = require('express');
 const { sequelize, testConnection } = require('./config/database');
 require('dotenv').config();
+const { initializeEventListeners } = require('./events/eventlistener/index');
 
 const app = express();
 app.use(express.json());
@@ -16,6 +17,9 @@ const adminRoutes = require('./routes/admin-routes');
 // Use routes
 app.use('/api/riders/admin', adminRoutes);
 app.use('/api/riders', riderRoutes);
+
+// Initialize event listeners
+initializeEventListeners();
 
 // Health check endpoint
 app.get('/health', (req, res) => {

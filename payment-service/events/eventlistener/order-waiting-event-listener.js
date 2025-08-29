@@ -1,8 +1,6 @@
 
-const { listen } = require('../config/rabbitmq');
-const paymentService = require('../services/payment-service');
-
-
+const { listen } = require('../../config/rabbitmq');
+const paymentService = require('../../services/payment-service');
 
 
 class OrderWaitingEventListener {

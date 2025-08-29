@@ -1,16 +1,21 @@
 const { listen } = require('../../config/rabbitmq');
-const orderService = require('../../services/order-service');
+const eventListenService = require('../../services/event-listener-service');
 
 
 class PaymentSuccessEventListener {
     handlePaymentSuccess() {
-        const handlerMap = {
+     try{   const handlerMap = {
             'payment.success': async (msg) => {
+                console.log('[Listener] payment.success event received:', msg);
                 const { orderId } = msg;
-                await orderService.processPaymentSuccess(orderId);
+                await eventListenService.processPaymentSuccess(orderId);
             }
         };
         listen(handlerMap);
+    } catch(error){
+        console.log(error)
+        throw error;
+    }
     }
 }
 module.exports = PaymentSuccessEventListener;
