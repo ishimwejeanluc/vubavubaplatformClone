@@ -3,14 +3,13 @@ const eventListenerService = require('../../services/event-listener-service');
 
 
 class PaymentFailedEventListener {
-    handlePaymentFailed() {
-        const handlerMap = {
+    static getHandler() {
+        return {
             'payment.failed': async (msg) => {
                 const { orderId } = msg;
                 await eventListenerService.processPaymentFailed(orderId);
             }
         };
-        listen(handlerMap);
     }
 }
 
