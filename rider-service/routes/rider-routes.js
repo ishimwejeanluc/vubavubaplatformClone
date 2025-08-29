@@ -6,6 +6,7 @@ const router = express.Router();
 router.post('/', riderController.createRider);
 router.get('/user/:userId', riderController.getRiderByUserId);
 router.get('/:riderId', riderController.getRiderById);
+router.put("/user/delivered/:assignmentId", riderController.orderDelivered);
 router.patch('/user/:userId/profile', riderController.updateRiderProfile);
 
 // Rider availability

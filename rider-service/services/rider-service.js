@@ -336,9 +336,9 @@ class RiderService {
                 } 
             };
         }
-    }    
-        
-    async orderDelivered(assignmentId) {
+    }
+
+    async orderDelivered(orderId, assignmentId) {
         try {
             const assignment = await DeliveryAssignment.findOne({ where: { id: assignmentId } });
             if (!assignment) {
@@ -382,6 +382,15 @@ class RiderService {
                     message: "Internal server error"
                 }
             };
+        }
+    }
+    async processOrderReady(orderId) {
+        try {
+            // Logic to process the order when it's ready
+            console.log(`Processing order ready event for orderId: ${orderId}`);
+            // You can add your business logic here
+        } catch (error) {
+            console.error('Error processing order ready event:', error);
         }
     }
 }

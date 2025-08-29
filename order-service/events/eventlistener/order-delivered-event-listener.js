@@ -4,7 +4,8 @@ const eventListenService = require('../../services/event-listener-service');;
 class OrderDeliveredEventListener {
   static getHandler() {
     return {
-      'order.delivered': async (msg) => {
+      'rider.delivered': async (msg) => {
+        console.log('Order delivered event received:', msg);
         const { orderId } = msg;
         await eventListenService.processOrderDelivered(orderId);
       }

@@ -1,4 +1,3 @@
-const { listen } = require('../../config/rabbitmq');
 const eventListenService = require('../../services/event-listener-service');
 
 

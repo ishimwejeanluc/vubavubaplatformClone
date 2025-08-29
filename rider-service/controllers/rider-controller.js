@@ -122,6 +122,22 @@ class RiderController {
             });
         }
     }
+
+    async orderDelivered(req, res) {
+        try {
+            const { orderId } = req.body;
+            const { assignmentId } = req.params;
+            const result = await riderService.orderDelivered(orderId, assignmentId);
+            res.status(result.statusCode).json(result.body);
+        } catch (error) {
+            console.error('Error in orderDelivered:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: "Internal server error" 
+            });
+        }
+    }
+
 }
 
 module.exports = new RiderController();

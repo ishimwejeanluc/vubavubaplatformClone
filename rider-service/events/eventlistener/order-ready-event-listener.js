@@ -5,8 +5,8 @@ class OrderReadyEventListener {
   handleOrderReady() {
     const handlerMap = {
       'order.ready': async (msg) => {
-        const { orderId, merchantId } = msg;
-        await riderService.processOrderReady(orderId, merchantId);
+        const { orderId } = msg;
+        await riderService.processOrderReady(orderId);
       }
     };
     listen(handlerMap);

@@ -3,7 +3,7 @@
 const amqp = require('amqplib');
 
 const config = {
-  url: process.env.RABBITMQ_URL || 'amqp://localhost:5672',
+  url: process.env.RABBITMQ_URL ,
   exchange: 'order_events',
   exchangeType: 'topic',
   options: { durable: true }

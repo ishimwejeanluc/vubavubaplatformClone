@@ -1,10 +1,10 @@
-const { listen } = ("../../config/rabbitmq");
 const eventListenService = require('../../services/event-listener-service');;
 
 class OrderAssignmentEventListener {
   static getHandler() {
     return {
-      'order.assigned': async (msg) => {
+      'rider.assigned': async (msg) => {
+        console.log('[Listener] rider.assigned event received:', msg);
         const { orderId } = msg;
         await eventListenService.processOrderAssigned(orderId);
       }
