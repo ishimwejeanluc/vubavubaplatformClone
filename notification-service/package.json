@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@pusher/push-notifications-server": "^1.2.7",
     "amqplib": "^0.10.9",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
