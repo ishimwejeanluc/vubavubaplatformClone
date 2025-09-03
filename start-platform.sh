@@ -15,13 +15,18 @@ echo "Starting Rider Service..."
 echo "Starting Payment Service..."
 (cd payment-service && npm i && node server.js &)
 
+echo "Starting Notification Service..."
+(cd notification-service && npm i && node server.js &)
+
 echo "Starting API Gateway..."
 (cd api-gateway && npm i && node server.js &)
 
+
 echo "All services started!"
-echo "Auth-Service:  http://localhost:4000"
-echo "Merchant-Service: http://localhost:5000"
-echo "Order-Service: http://localhost:6000"
-echo "Rider-Service: http://localhost:7000"
-echo "Payment-Service: http://localhost:8000"
+echo "Auth-Service:  http://localhost:8000"
+echo "Merchant-Service: http://localhost:4000"
+echo "Order-Service: http://localhost:7000"
+echo "Rider-Service: http://localhost:5000"
+echo "Payment-Service: http://localhost:6000"
+echo "Notification-Service: http://localhost:2000"
 echo "API-Gateway:   http://localhost:3000"

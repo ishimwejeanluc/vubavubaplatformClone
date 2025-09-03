@@ -1,15 +1,22 @@
+const PushNotifications = require('@pusher/push-notifications-server');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const validator = require('validator');
 require('dotenv').config();
 
+const beamsClient = new PushNotifications({
+  instanceId: process.env.INSTANCE_ID,
+  secretKey: process.env.BEAMS_SECRET_KEY,
+});
 
 
-/**
- * Helper utilities for Auth Service
- */
 class AuthHelpers {
+
+
+  static generateBeamsToken(userId) {
+    return beamsClient.generateToken(userId);
+  }
  
   
   

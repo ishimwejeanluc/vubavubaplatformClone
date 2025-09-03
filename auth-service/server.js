@@ -3,6 +3,7 @@ const express = require('express');
 require('dotenv').config();
 const authRoutes = require('./routes/auth-routes');
 const adminRoutes = require('./routes/admin-routes');
+const PORT = process.env.PORT ;
 
 const app = express();
 
@@ -27,15 +28,22 @@ app.use((err, req, res, next) => {
 });
 
 
-
-
 app.listen(process.env.PORT, async () => {
-  try{
+  try {
     await testConnection();
     console.log('Database connected...');
-    sequelize.sync({alter: true});
+    await sequelize.sync({ alter: true });
+    console.log('Database synced...');
   } catch (error) {
     console.error('Database connection failed:', error);
   }
-  console.log(`Auth Service running on port ${process.env.PORT}`);
+  console.log('\n=== AUTH SERVICE READY ===');
+  console.log(`Auth Service running on port ${PORT}`);
+  console.log('Available endpoints:');
+  console.log(`├── Health: GET http://localhost:${PORT}/health`);
+  console.log('=================================\n');
 });
+
+
+ 
+

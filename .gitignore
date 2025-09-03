@@ -1,0 +1,9 @@
+.env
+
+node_modules/
+unnecessary_file.txt
+random_folder/
+*.bak
+debug.log
+/.vscode/
+*.code-workspace

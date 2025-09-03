@@ -1,5 +1,4 @@
 const { Sequelize } = require('sequelize');
-const { PaymentController } = require('../../payment-service/controllers/payment-controller');
 require('dotenv').config();
 
 // Database connection configuration

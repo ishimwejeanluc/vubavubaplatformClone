@@ -362,7 +362,7 @@ class RiderService {
             orderDeliveredEventPublisher.publish({
                 assignmentId: assignment.id,
                 riderId: rider.id,
-                orderId: assignment.order_id
+                orderId: orderId
             });
 
             return {

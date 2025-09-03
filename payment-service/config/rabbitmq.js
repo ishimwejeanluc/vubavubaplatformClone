@@ -4,7 +4,7 @@ const amqp = require('amqplib');
 
 const config = {
   url: process.env.RABBITMQ_URL ,
-  exchange: 'order_events',
+  exchange: 'VV_events',
   exchangeType: 'topic',
   options: { durable: true }
 };

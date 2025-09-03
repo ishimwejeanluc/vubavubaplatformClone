@@ -1,4 +1,3 @@
-const { isAbaRouting } = require("validator");
 const  User  = require("../models/User");
 const AuthHelpers = require("../utils/helpers");
 
@@ -34,11 +33,13 @@ class AuthService {
     }
 
     const token = AuthHelpers.generateToken(findUser);
+    const BeamsToken = AuthHelpers.generateBeamsToken(findUser.id);
     return {
       statusCode: 200,
       body: {
         message: "Login successful",
-        token: token
+        token: token,
+        beamsToken: BeamsToken
       }
     };
   }

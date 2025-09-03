@@ -3,6 +3,8 @@ const { sequelize, testConnection } = require('./config/database');
 require('dotenv').config();
 const { initializeEventListeners } = require('./events/eventlistener/index');
 
+const PORT = process.env.PORT ;
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -30,16 +32,20 @@ app.get('/health', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT ;
 
-app.listen(PORT, async () => {
+app.listen(process.env.PORT , async () => {
   try {
     await testConnection();
     console.log('Database connected...');
     await sequelize.sync({ alter: true });
     console.log('Database synced...');
-    console.log(`Rider service running on port ${PORT}`);
   } catch (error) {
     console.error('Database connection failed:', error);
   }
+  console.log('\n=== RIDER SERVICE READY ===');
+  console.log(`Rider Service running on port ${PORT}`);
+  console.log('Available endpoints:');
+  console.log(`├── Health: GET http://localhost:${PORT}/health`);
+  console.log('├── Payments: /api/payments/*');
+  console.log('=================================\n');
 });

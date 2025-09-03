@@ -6,6 +6,7 @@ const {merchant , MenuItems} = require('./models/association');
 const merchantRoutes = require('./routes/merchant-routes');
 const menuRoutes = require('./routes/menu-routes');
 const adminRoutes = require('./routes/admin-routes');
+const PORT = process.env.PORT ;
 
 const app = express();
 
@@ -50,9 +51,9 @@ app.listen(process.env.PORT, async () => {
     console.error('Database connection failed:', error);
   }
   console.log('\n=== MERCHANT SERVICE READY ===');
-  console.log(`Merchant Service running on port ${process.env.PORT}`);
+  console.log(`Merchant Service running on port ${PORT}`);
   console.log('Available endpoints:');
-  console.log(`├── Health: GET http://localhost:${process.env.PORT}/health`);
+  console.log(`├── Health: GET http://localhost:${PORT}/health`);
   console.log('├── Merchants: /api/merchants/*');
   console.log('└── Menu Items: /api/menu/*');
   console.log('=================================\n');

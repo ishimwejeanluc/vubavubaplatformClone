@@ -79,6 +79,18 @@ else
 fi
 PAYMENT_PID=$!
 
+# Start notifications service
+
+echo " Starting Notifications Service..."
+cd ../notification-service
+if [ "$DEBUG_MODE" = "debug" ]; then
+    echo "   Debug Port: 9235"
+    node --inspect=0.0.0.0:9235 --trace-warnings server.js &
+else
+    node server.js &
+fi
+NOTIFICATION_PID=$!
+
 # Start API Gateway
 echo " Starting API Gateway..."
 cd ../api-gateway
@@ -100,6 +112,7 @@ echo "  Merchant Service: PID $MERCHANT_PID"
 echo "  Order Service:    PID $ORDER_PID"
 echo "  Rider Service:    PID $RIDER_PID"
 echo "  Payment Service:  PID $PAYMENT_PID"
+echo "  Notifications Service: PID $NOTIFICATION_PID"
 echo "  API Gateway:      PID $GATEWAY_PID"
 
 if [ "$DEBUG_MODE" = "debug" ]; then
@@ -110,6 +123,7 @@ if [ "$DEBUG_MODE" = "debug" ]; then
     echo "  Order Service:   chrome://inspect -> localhost:9231"
     echo "  Rider Service:    chrome://inspect -> localhost:9232"
     echo "  Payment Service:  chrome://inspect -> localhost:9233"
+    echo
     echo "  API Gateway:      chrome://inspect -> localhost:9234"
 fi
 
@@ -120,13 +134,14 @@ echo "  Merchant Service: http://localhost:5000"
 echo "  Order Service:    http://localhost:6000"
 echo "  Rider Service:    http://localhost:7000"
 echo "  Payment Service:  http://localhost:8000"
+echo "  Notifications Service: http://localhost:9000"
 echo "  API Gateway:      http://localhost:3000"
 
 # Function to cleanup on exit
 cleanup() {
     echo ""
     echo " Stopping all services..."
-    kill $AUTH_PID $MERCHANT_PID $ORDER_PID $RIDER_PID  $PAYMENT_PID $GATEWAY_PID 2>/dev/null
+    kill $AUTH_PID $MERCHANT_PID $ORDER_PID $RIDER_PID  $PAYMENT_PID $GATEWAY_PID $NOTIFICATION_PID  2>/dev/null
     pkill -f "node.*server.js" 2>/dev/null
     exit 0
 }
