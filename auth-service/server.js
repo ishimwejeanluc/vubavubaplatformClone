@@ -3,6 +3,7 @@ const express = require('express');
 require('dotenv').config();
 const authRoutes = require('./routes/auth-routes');
 const adminRoutes = require('./routes/admin-routes');
+const GlobalExceptionHandler = require('./exceptions/global-exception-handler');
 const PORT = process.env.PORT ;
 
 const app = express();
@@ -22,10 +23,8 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-  res.status(err.status || 500).json({ success: false, message: err.message });
-});
+// Global exception handler (must be last middleware)
+app.use(GlobalExceptionHandler.handle);
 
 
 app.listen(process.env.PORT, async () => {

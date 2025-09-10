@@ -1,33 +1,36 @@
 
-const userService = require('../services/auth-service');
-const  AuthHelpers  = require('../utils/helpers');
-const  User  = require('../models/User');
+const authService = require('../services/auth-service');
+const { LoginRequestDto , RegisterRequestDto  } = require('../dtos');
+const ApiResponse = require('../utils/api-response');
+
 
 class AuthController {
-  async register(req, res) {
+  async register(req, res, next) {
     try {
-      const { name, email, password, phone, role } = req.body;
-      let hashedPassword = await AuthHelpers.hashPassword(password);
-      const user = new User({
-        name,
-        email,
-        password: hashedPassword,
-        phone,
-        role
-      });
-      const result = await userService.register(user);
-      res.status(result.statusCode || 201).json(result.body);
+      const registerDto = new RegisterRequestDto(req.body);
+      const result = await authService.register(registerDto);
+
+      res.status(result.statusCode || 201).json(new ApiResponse(
+        true, 
+        "User registered successfully", 
+        result
+      ));
     } catch (error) {
-      res.status(400).json({ success: false, message: error.message });
+     next(error);
     }
   }
 
-  async login(req, res) {
+  async login(req, res, next) {
     try {
-      const result = await userService.login(req.body);
-      res.status(result.statusCode || 200).json(result.body);
+      const loginDto = new LoginRequestDto(req.body);
+      const result = await authService.login(loginDto);
+      res.status(result.statusCode || 200).json(new ApiResponse(
+        true,
+        "Login Successfully",
+        result
+      ));
     } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
+      next(error);
     }
   }
 
@@ -35,20 +38,20 @@ class AuthController {
     res.status(200).json({ success: true, message: 'Logged out successfully' });
   }
 
-  async forgotPassword(req, res) {
+  async forgotPassword(req, res, next) {
     try {
       const result = await userService.forgotPassword(req.body);
       res.status(result.statusCode || 200).json(result.body);
     } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
+      next(error);
     }
   }
-  async resetPassword(req, res) {
+  async resetPassword(req, res, next) {
     try {
       const result = await userService.resetPassword(req.body);
       res.status(result.statusCode || 200).json(result.body);
     } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
+      next(error);
     }
   }
 
