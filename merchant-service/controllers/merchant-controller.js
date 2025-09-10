@@ -1,143 +1,116 @@
 const merchantService = require('../services/merchant-service');
-const menuService = require('../services/menu-service'); // ← Add this import
+const { CreateMerchantRequestDto, UpdateMerchantRequestDto, CreateMenuItemRequestDto, UpdateMenuItemRequestDto } = require('../dtos');
+const ApiResponse = require('../utils/api-response');
 
-class MerchantController  {
-  
-
-  async createMerchant(req, res) {
+class MerchantController {
+  async createMerchant(req, res, next) {
     try {
-    
-      const result = await merchantService.createMerchant(req.body);
-      res.status(result.statusCode).json(result.body);
+      const createMerchantDto = new CreateMerchantRequestDto(req.body);
+      const result = await merchantService.createMerchant(createMerchantDto);
+      
+      res.status(201).json(new ApiResponse(
+        true,
+        "Merchant created successfully",
+        result
+      ));
     } catch (error) {
-      console.error('Create merchant profile error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to create merchant profile',
-        error: error.message 
-      });
+      next(error);
+    }
+  }
+
+
+
+  async getMerchantProfile(req, res, next) {
+    try {
+      const { user_id } = req.params;
+      const result = await merchantService.getMerchantProfile(user_id);
+      
+      res.status(200).json(new ApiResponse(
+        true,
+        "Merchant profile retrieved successfully",
+        result
+      ));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateMerchantProfile(req, res, next) {
+    try {
+      const { merchantId } = req.params;
+      const updateMerchantDto = new UpdateMerchantRequestDto(req.body);
+      const result = await merchantService.updateMerchant(merchantId, updateMerchantDto);
+      
+      res.status(200).json(new ApiResponse(
+        true,
+        "Merchant profile updated successfully",
+        result
+      ));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+ 
+  async createMenuItem(req, res, next) {
+    try {
+      const createMenuItemDto = new CreateMenuItemRequestDto(req.body);
+      const result = await merchantService.createMenuItem(createMenuItemDto);
+      
+      res.status(201).json(new ApiResponse(
+        true,
+        "Menu item created successfully",
+        result
+      ));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMerchantMenu(req, res, next) {
+    try {
+      const { merchantId } = req.params;
+      const result = await merchantService.getMerchantMenu(merchantId);
+      res.status(200).json(new ApiResponse(
+        true,
+        "Merchant menu retrieved successfully",
+        result
+      ));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMenuItem(req, res, next) {
+    try {
+      const { menuId } = req.params;
+      const result = await merchantService.getMenuItemById(menuId);
+      res.status(200).json(new ApiResponse(
+        true,
+        "Menu item retrieved successfully",
+        result
+      ));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateMenuItem(req, res, next) {
+    try {
+      const { menuId } = req.params;
+      const updateMenuItemDto = new UpdateMenuItemRequestDto(req.body);
+      const result = await merchantService.updateMenuItem(menuId, updateMenuItemDto);
+      res.status(200).json(new ApiResponse(
+        true,
+        "Menu item updated successfully",
+        result
+      ));
+    } catch (error) {
+      next(error);
     }
   }
 
   
-  async getMerchantProfile(req, res) {
-    try {
-      const result = await merchantService.getMerchantByUserId(req.params.user_id);
-      res.status(result.statusCode).json(result.body);
-    } catch (error) {
-      console.error(' Get merchant profile error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to fetch merchant profile',
-        error: error.message 
-      });
-    }
-  }
-
-  // Update merchant profile
-  async updateMerchantProfile(req, res) {
-    try {
-      const result = await merchantService.updateMerchant(req.params.merchantId, req.body);
-      res.status(result.statusCode).json(result.body);
-    } catch (error) {
-      console.error('Update merchant profile error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to update merchant profile',
-        error: error.message 
-      });
-    }
-  }
-    
-   // MENU MANAGEMENT
-
-   async toggleAvailability(req, res) {
-       try {
-         const result = await menuService.toggleAvailability(req.params.id);
-         res.status(result.statusCode).json(result.body);
-       } catch (error) {
-         console.error('Check availability error:', error);
-         res.status(500).json({ 
-           success: false, 
-           message: 'Failed to check availability',
-           error: error.message 
-         });
-       }
-     }  
-
-  async getMerchantMenu(req, res) {
-    try {
-     
-      const result = await menuService.getMenuItemsByMerchant(req.params.merchantId);
-      res.status(result.statusCode).json(result.body);
-    } catch (error) {
-      console.error(' Get merchant menu error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to fetch menu items',
-        error: error.message 
-      });
-    }
-  }
-    async deleteMenuItem(req, res) {
-    try {
-  console.log(`Deleting menu item ${req.params.id}...`);
-      const result = await menuService.deleteMenuItem(req.params.id);
-      res.status(result.statusCode).json(result.body);
-    } catch (error) {
-      console.error('Delete menu item error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to delete menu item',
-        error: error.message 
-      });
-    }
-  }
-
-  async createMenuItem(req, res) {
-    try {
-  console.log(`Creating menu item for merchant...`);
-      const result = await menuService.createMenuItem(req.body);
-      res.status(result.statusCode).json(result.body);
-    } catch (error) {
-      console.error('Create menu item error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to create menu item',
-        error: error.message 
-      });
-    }
-  }
-
-  async getMenuItem(req, res) {
-    try {
-  console.log(`Getting menu item ${req.params.menuId}...`);
-      const result = await merchantService.getMenuItemById(req.params.menuId);
-      res.status(result.statusCode).json(result.body);
-    } catch (error) {
-      console.error('Get menu item error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to fetch menu item',
-        error: error.message 
-      });
-    }
-  }
-
-  async updateMenuItem(req, res) {
-    try {
-  console.log(`Updating menu item ${req.params.menuId}...`);
-      const result = await menuService.updateMenuItem(req.params.menuId, req.body);
-      res.status(result.statusCode).json(result.body);
-    } catch (error) {
-      console.error('Update menu item error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to update menu item',
-        error: error.message 
-      });
-    }
-  }
-};
+}
 
 module.exports = new MerchantController();

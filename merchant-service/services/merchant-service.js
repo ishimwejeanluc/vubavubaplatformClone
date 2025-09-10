@@ -1,544 +1,199 @@
-const { Merchant, MenuItem } = require('../models/association');
-const { Op } = require('sequelize');
+const Merchant = require("../models/merchant");
+const MenuItem = require("../models/menu-item");
+const { 
+  MerchantResponseDto,
+  CreateMenuItemResponseDto,
+  ProfileResponseDto,
+  MerchantMenuResponseDto,
+  MenuItemResponseDto,
+  UpdateMenuItemRequestDto
+} = require("../dtos");
 
-const menuService = {
-  
-  async createMerchant(merchantData) {
-    try {
-      // Check if user already has a merchant profile
-      const existingMerchant = await Merchant.findOne({
-        where: { user_id: merchantData.user_id }
-      });
+const { 
+  ResourceAlreadyExistsException, 
+  ResourceNotFoundException
+} = require("../exceptions");
 
-      if (existingMerchant) {
-        return {
-          statusCode: 400,
-          body: {
-            success: false,
-            message: 'User already has a merchant profile'
-          }
-        };
-      }
+class MerchantService {
+  // Create merchant (used by routes)
+  async createMerchant(data) {
+    // Check if user already has a merchant profile
+    const existingMerchant = await Merchant.findOne({
+      where: { user_id: data.user_id }
+    });
 
-      // Check if business name already exists
+    if (existingMerchant) {
+      throw new ResourceAlreadyExistsException("Merchant with this ID already exists");
+    }
+
+    // Check if business name already exists
+    const existingBusiness = await Merchant.findOne({
+      where: { business_name: data.business_name }
+    });
+
+    if (existingBusiness) {
+      throw new ResourceAlreadyExistsException('Business name already exists');
+    }
+
+    const merchant = await Merchant.create({
+      ...data,
+      is_active: true
+    });
+
+    return new MerchantResponseDto(merchant);
+  }
+
+
+    async updateMerchant(merchantId, data) {
+    const merchant = await Merchant.findByPk(merchantId);
+    if (!merchant) {
+      throw new ResourceNotFoundException("Merchant not found");
+    }
+
+    // Check if business name already exists (excluding current merchant)
+    if (data.business_name && data.business_name !== merchant.business_name) {
       const existingBusiness = await Merchant.findOne({
-        where: { business_name: merchantData.business_name }
+        where: { 
+          business_name: data.business_name,
+          id: { [require('sequelize').Op.ne]: merchantId }
+        }
       });
-
       if (existingBusiness) {
-        return {
-          statusCode: 400,
-          body: {
-            success: false,
-            message: 'Business name already exists'
-          }
-        };
+        throw new ResourceAlreadyExistsException('Business name already exists');
       }
-
-      const merchant = await Merchant.create({
-        ...merchantData,
-        is_active: true
-      });
-
-      return {
-        statusCode: 201,
-        body: {
-          success: true,
-          message: 'Merchant profile created successfully',
-          data: merchant
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
     }
-  },
 
-  async getMerchantById(merchantId) {
-    try {
-      const merchant = await Merchant.findByPk(merchantId, {
-        include: [{
-          model: MenuItem,
-          as: 'menuItems',
-          attributes: ['id', 'name', 'price', 'available', 'image_url']
-        }]
-      });
+    const updatedMerchant = await merchant.update(data);
+    return new MerchantResponseDto(updatedMerchant);
+  }
 
-      if (!merchant) {
-        return {
-          statusCode: 404,
-          body: {
-            success: false,
-            message: 'Merchant not found'
-          }
-        };
-      }
-
-      return {
-        statusCode: 200,
-        body: {
-          success: true,
-          data: merchant
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
+  // Get merchant profile by user_id (used by routes for getting merchant profile)
+  async getMerchantProfile(userId) {
+    const merchant = await Merchant.findOne({
+      where: { user_id: userId }
+    });
+    
+    if (!merchant) {
+      throw new ResourceNotFoundException("Merchant profile not found");
     }
-  },
+    
+    return new ProfileResponseDto(merchant);
+  }
 
-  async getMerchantByUserId(userId) {
-    try {
-      const merchant = await Merchant.findOne({
-        where: { user_id: userId },
-        include: [{
-          model: MenuItem,
-          as: 'menuItems',
-          attributes: ['id', 'name', 'price', 'available', 'image_url']
-        }]
-      });
-
-      if (!merchant) {
-        return {
-          statusCode: 404,
-          body: {
-            success: false,
-            message: 'Merchant profile not found for this user'
-          }
-        };
-      }
-
-      return {
-        statusCode: 200,
-        body: {
-          success: true,
-          data: merchant
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
+  async createMenuItem(data) {
+  
+    const merchant = await Merchant.findByPk(data.merchant_id);
+    if (!merchant) {
+      throw new ResourceNotFoundException("Merchant not found");
     }
-  },
-
-  async updateMerchant(merchantId, updateData) {
-    try {
-      const merchant = await Merchant.findByPk(merchantId);
-
-      if (!merchant) {
-        return {
-          statusCode: 404,
-          body: {
-            success: false,
-            message: 'Merchant not found'
-          }
-        };
-      }
-
-      // Check if business name already exists (if updating business_name)
-      if (updateData.business_name && updateData.business_name !== merchant.business_name) {
-        const existingBusiness = await Merchant.findOne({
-          where: { 
-            business_name: updateData.business_name,
-            id: { [Op.ne]: merchantId }
-          }
-        });
-
-        if (existingBusiness) {
-          return {
-            statusCode: 400,
-            body: {
-              success: false,
-              message: 'Business name already exists'
-            }
-          };
-        }
-      }
-
-      await merchant.update(updateData);
-
-      return {
-        statusCode: 200,
-        body: {
-          success: true,
-          message: 'Merchant profile updated successfully',
-          data: merchant
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
+    
+    if (!merchant.is_active) {
+      throw new ResourceNotFoundException("Merchant is not active");
     }
-  },
-
-  // ADMIN FEATURES
-
-  async getAllMerchants(queryParams) {
-    try {
-      const { page = 1, limit = 10, status, search } = queryParams;
-      const offset = (page - 1) * limit;
-
-      const whereClause = {};
-
-      // Filter by status
-      if (status) {
-        whereClause.is_active = status === 'active';
+    
+    // Check if menu item with same name already exists for this merchant
+    const existingMenuItem = await MenuItem.findOne({
+      where: { 
+        name: data.name,
+        merchant_id: data.merchant_id
       }
-
-      // Search by business name
-      if (search) {
-        whereClause.business_name = {
-          [Op.iLike]: `%${search}%`
-        };
-      }
-
-      const { count, rows: merchants } = await Merchant.findAndCountAll({
-        where: whereClause,
-        include: [{
-          model: MenuItem,
-          as: 'menuItems',
-          attributes: ['id', 'name', 'price', 'available']
-        }],
-        limit: parseInt(limit),
-        offset: parseInt(offset),
-        order: [['createdAt', 'DESC']]
-      });
-
-      return {
-        statusCode: 200,
-        body: {
-          success: true,
-          data: {
-            merchants,
-            pagination: {
-              total: count,
-              page: parseInt(page),
-              limit: parseInt(limit),
-              totalPages: Math.ceil(count / limit)
-            }
-          }
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
+    });
+    
+    if (existingMenuItem) {
+      throw new ResourceAlreadyExistsException("Menu item with this name already exists for this merchant");
     }
-  },
+    
+    // Create the menu item
+    const menuItem = await MenuItem.create({
+      name: data.name,
+      price: data.price,
+      description: data.description,
+      merchant_id: data.merchant_id,
+      available: true
+    });
+    
+    return new CreateMenuItemResponseDto(menuItem);
+  }
 
-  async toggleMerchantStatus(merchantId) {
-    try {
-      const merchant = await Merchant.findByPk(merchantId);
-
-      if (!merchant) {
-        return {
-          statusCode: 404,
-          body: {
-            success: false,
-            message: 'Merchant not found'
-          }
-        };
-      }
-
-      const newStatus = !merchant.is_active;
-      await merchant.update({ is_active: newStatus });
-
-      return {
-        statusCode: 200,
-        body: {
-          success: true,
-          message: `Merchant ${newStatus ? 'activated' : 'deactivated'} successfully`,
-          data: { 
-            id: merchant.id,
-            business_name: merchant.business_name,
-            is_active: newStatus 
-          }
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
+  async getMerchantMenu(merchantId) {
+    // Check if merchant exists
+    const merchant = await Merchant.findByPk(merchantId);
+    if (!merchant) {
+      throw new ResourceNotFoundException("Merchant not found");
     }
-  },
-
-  async deleteMerchant(merchantId) {
-    try {
-      const merchant = await Merchant.findByPk(merchantId);
-
-      if (!merchant) {
-        return {
-          statusCode: 404,
-          body: {
-            success: false,
-            message: 'Merchant not found'
-          }
-        };
-      }
-
-      await merchant.destroy(); // Will cascade delete menu items
-
-      return {
-        statusCode: 200,
-        body: {
-          success: true,
-          message: 'Merchant deleted successfully'
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
+    
+    // Check if merchant is active
+    if (!merchant.is_active) {
+      throw new ResourceNotFoundException("Merchant is not active");
     }
-  },
-
-  async activateMerchant(merchantId) {
-    try {
-      const merchant = await Merchant.findByPk(merchantId);
-
-      if (!merchant) {
-        return {
-          statusCode: 404,
-          body: {
-            success: false,
-            message: 'Merchant not found'
-          }
-        };
-      }
-
-      if (merchant.is_active) {
-        return {
-          statusCode: 400,
-          body: {
-            success: false,
-            message: 'Merchant is already active'
-          }
-        };
-      }
-
-      await merchant.update({ is_active: true });
-
-      return {
-        statusCode: 200,
-        body: {
-          success: true,
-          message: 'Merchant activated successfully',
-          data: {
-            id: merchant.id,
-            business_name: merchant.business_name,
-            is_active: true
-          }
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
+    
+    // Get all menu items for this merchant
+    const menuItems = await MenuItem.findAll({
+      where: { merchant_id: merchantId },
+      order: [['createdAt', 'DESC']]
+    });
+    
+    // If no menu items found, throw an error or return empty menu
+    if (!menuItems || menuItems.length === 0) {
+      throw new ResourceNotFoundException("No menu items found for this merchant");
     }
-  },
-
-  async deactivateMerchant(merchantId) {
-    try {
-      const merchant = await Merchant.findByPk(merchantId);
-
-      if (!merchant) {
-        return {
-          statusCode: 404,
-          body: {
-            success: false,
-            message: 'Merchant not found'
-          }
-        };
-      }
-
-      if (!merchant.is_active) {
-        return {
-          statusCode: 400,
-          body: {
-            success: false,
-            message: 'Merchant is already inactive'
-          }
-        };
-      }
-
-      await merchant.update({ is_active: false });
-
-      return {
-        statusCode: 200,
-        body: {
-          success: true,
-          message: 'Merchant deactivated successfully',
-          data: {
-            id: merchant.id,
-            business_name: merchant.business_name,
-            is_active: false
-          }
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
-    }
-  },
+    
+    return new MerchantMenuResponseDto(merchantId, menuItems);
+  }
 
   async getMenuItemById(itemId) {
-    try {
-      console.log(`[MENU SERVICE] Getting menu item by ID: ${itemId}`);
-
-      const menuItem = await MenuItem.findByPk(itemId, {
-        include: [
-          {
-            model: Merchant,
-            as: 'merchant',
-            attributes: ['id', 'business_name', 'is_active']
-          }
-        ]
-      });
-
-      if (!menuItem) {
-        return {
-          statusCode: 404,
-          body: {
-            success: false,
-            message: 'Menu item not found'
-          }
-        };
-      }
-
-      return {
-        statusCode: 200,
-        body: {
-          success: true,
-          message: 'Menu item retrieved successfully',
-          data: menuItem
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
+    // Find the menu item by ID
+    const menuItem = await MenuItem.findByPk(itemId);
+    if (!menuItem) {
+      throw new ResourceNotFoundException("Menu item not found");
     }
-  },
-
-  async toggleAvailability(itemId) {
-    try {
-  console.log(`[MENU SERVICE] Toggling availability for item: ${itemId}`);
-
-      const menuItem = await MenuItem.findByPk(itemId);
-
-      if (!menuItem) {
-        return {
-          statusCode: 404,
-          body: {
-            success: false,
-            message: 'Menu item not found'
-          }
-        };
-      }
-
-      // Store the current state before toggling
-      const previousAvailability = menuItem.available;
-      
-      // Toggle the availability
-      const newAvailability = !menuItem.available;
-      await menuItem.update({ available: newAvailability });
-
-      // Refresh the menuItem to get updated data
-      await menuItem.reload();
-
-      return {
-        statusCode: 200,
-        body: {
-          success: true,
-          message: `Menu item ${newAvailability ? 'made available' : 'made unavailable'} successfully`,
-          data: {
-            id: menuItem.id,
-            name: menuItem.name,
-            available: menuItem.available, // This will now be the updated value
-            previousState: previousAvailability,
-            newState: newAvailability
-          }
-        }
-      };
-    } catch (error) {
-      console.error('Service error:', error);
-      return {
-        statusCode: 500,
-        body: {
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-        }
-      };
+    
+    // Check if the merchant is active
+    const merchant = await Merchant.findByPk(menuItem.merchant_id);
+    if (!merchant) {
+      throw new ResourceNotFoundException("Merchant not found");
     }
-  },
+    
+    if (!merchant.is_active) {
+      throw new ResourceNotFoundException("Merchant is not active");
+    }
+    
+    return new MenuItemResponseDto(menuItem);
+  }
+
+  async updateMenuItem(itemId, data) {
+  
+    
+    // Find the menu item by ID
+    const menuItem = await MenuItem.findByPk(itemId);
+    if (!menuItem) {
+      throw new ResourceNotFoundException("Menu item not found");
+    }
+    
+    // Check if the merchant exists and is active
+    const merchant = await Merchant.findByPk(menuItem.merchant_id);
+    if (!merchant) {
+      throw new ResourceNotFoundException("Merchant not found");
+    }
+    
+    if (!merchant.is_active) {
+      throw new ResourceNotFoundException("Merchant is not active");
+    }
+    
+    // Update only the fields that are provided
+    const updateData = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.price !== undefined) updateData.price = data.price;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.available !== undefined) updateData.available = data.available;
+    if (data.image_url !== undefined) updateData.image_url = data.image_url;
+
+    const updatedMenuItem = await menuItem.update(updateData);
+    return new MenuItemResponseDto(updatedMenuItem);
+  }
+
+}
 
   
-};
 
-module.exports = menuService;
+module.exports = new MerchantService();
