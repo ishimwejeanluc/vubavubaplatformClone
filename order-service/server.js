@@ -5,17 +5,20 @@ const {order , MenuItems} = require('./models/association');
 const customerRoutes = require('./routes/customer-routes');
 const merchantRoutes = require('./routes/merchant-routes');
 const { initializeEventListeners } = require('./events/eventlistener/index');
+const GlobalExceptionHandler = require('./exceptions/global-exception-handler');
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
 // Mount routes - MOST SPECIFIC FIRST
 app.use('/api/orders/customer', customerRoutes);
 app.use('/api/orders/merchant', merchantRoutes);
 
 initializeEventListeners();
+
 
 
 // Health check endpoint
@@ -31,14 +34,8 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(err.status || 500).json({ 
-    success: false, 
-    message: err.message || 'Internal server error'
-  });
-});
+// Global exception handler - must be after routes
+app.use(GlobalExceptionHandler.handle);
 
 app.listen(process.env.PORT, async () => {
   try {

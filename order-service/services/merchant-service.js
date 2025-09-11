@@ -2,6 +2,8 @@ const { Order, OrderItem, OrderHistory } = require('../models/association');
 const { ORDER_STATUS } = require('../utils/Enums/order-status');
 const { sequelize } = require('../config/database');
 const { OrderReadyEventPublisher,OrderDeliveredEventPublisher} = require('../events/publishedevent/index');
+const { InvalidOrderDataException , ResourceNotFoundException} = require('../exceptions');
+
 
 const orderReadyPublisher = new OrderReadyEventPublisher();
 class MerchantOrderService {
@@ -26,7 +28,7 @@ class MerchantOrderService {
     });
 
     if (!order) {
-      throw new Error('Order not found or you are not authorized to view this order');
+      throw new ResourceNotFoundException('Order not found or you are not authorized to view this order');
     }
 
     return order;
@@ -54,44 +56,62 @@ class MerchantOrderService {
     return orders;
   }
 
-  // Update order status (merchant workflow)
-  // Update an order's status and publish the corresponding event
   async updateOrderStatus(orderId, newStatus, merchantId) {
     // Validate the new status against the enum
     if (!Object.values(ORDER_STATUS).includes(newStatus)) {
-      throw new Error(`Invalid status: ${newStatus}`);
+      throw new InvalidOrderDataException(`Invalid status: ${newStatus}`);
     }
 
     const transaction = await sequelize.transaction();
     try {
-      const order = await Order.findByPk(orderId);
-      if (!order) throw new Error('Order not found');
+      // Find order and verify merchant ownership
+      const order = await Order.findOne({
+        where: { 
+          id: orderId,
+          merchant_id: merchantId 
+        }
+      });
+      
+      if (!order) {
+        throw new ResourceNotFoundException('Order not found or you are not authorized to update this order');
+      }
 
       // Update order status
-          await order.update({ status: newStatus }, { transaction });
-      if (newStatus === ORDER_STATUS.READY) {
-        
-        await orderReadyPublisher.publish({ orderId, merchantId });
-      } 
-// Add order history record for the new status
- await OrderHistory.create({
+      await order.update({ status: newStatus }, { transaction });
+      
+      // Add order history record for the new status
+      await OrderHistory.create({
         order_id: orderId,
         status: newStatus
       }, { transaction });
-    
-          
-        
 
       await transaction.commit();
+      
+      // Publish event after successful commit
+      if (newStatus === ORDER_STATUS.READY) {
+        try {
+          await orderReadyPublisher.publish({ 
+            orderId, 
+            merchantId,
+            userId: order.customer_id  
+          });
+          console.log(`[EVENT SENT] order.ready for orderId: ${orderId}, merchantId: ${merchantId}, userId: ${order.customer_id}`);
+        } catch (eventError) {
+          console.error(`[EVENT ERROR] Failed to publish order.ready for orderId: ${orderId}`, eventError);
+        }
+      }
+
       return await this.getOrderById(orderId, merchantId);
     } catch (error) {
       console.log(error);
-      await transaction.rollback();
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
       throw error;
     }
   }
 
-  // Cancel order (merchant can cancel orders assigned to them)
+  
   async cancelOrder(orderId, merchantId) {
     const transaction = await sequelize.transaction();
     
@@ -104,12 +124,12 @@ class MerchantOrderService {
       });
 
       if (!order) {
-        throw new Error('Order not found or you are not authorized to cancel this order');
+        throw new ResourceNotFoundException('Order not found or you are not authorized to cancel this order');
       }
 
       // Check if order can be cancelled by merchant
       if (![ORDER_STATUS.PENDING, ORDER_STATUS.READY].includes(order.status)) {
-        throw new Error('Order cannot be cancelled at this stage');
+        throw new OrderCancellationException('Order cannot be cancelled at this stage');
       }
 
       // Update order status to cancelled
@@ -147,7 +167,7 @@ class MerchantOrderService {
     });
 
     if (!order) {
-      throw new Error('Order not found or you are not authorized to view this order');
+      throw new ResourceNotFoundException('Order not found or you are not authorized to view this order');
     }
 
     return order.orderHistory;
@@ -257,7 +277,7 @@ class MerchantOrderService {
     return validTransitions[currentStatus]?.includes(newStatus) || false;
   }
 
-  // Get recent orders for merchant dashboard
+  // Get recent orders for merchant dashboard 
   async getRecentOrders(merchantId, limit = 10) {
     const orders = await Order.findAll({
       where: { merchant_id: merchantId },

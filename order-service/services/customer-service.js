@@ -4,6 +4,8 @@ const { PAYMENT_STATUS } = require('../utils/Enums/payment-status');
 const { sequelize } = require('../config/database');
 const {OrderWaitingPaymentEventPublisher} = require('../events/publishedevent/index');
 const orderWaitingPayment = new OrderWaitingPaymentEventPublisher();
+const {ResourceNotFoundException, OrderCancellationException} = require('../exceptions');
+const {OrderResponseDto,OrderHistoryDto, RecentOrdersResponseDto} = require('../dtos');
 
 class CustomerOrderService {
   // Create a new order with order items (after payment is completed)
@@ -77,10 +79,10 @@ class CustomerOrderService {
     });
 
     if (!order) {
-      throw new Error('Order not found or you are not authorized to view this order');
+      throw new ResourceNotFoundException('Order not found or you are not authorized to view this order');
     }
 
-    return order;
+    return new OrderResponseDto(order);
   }
 
   // Get all orders for a customer
@@ -118,12 +120,12 @@ class CustomerOrderService {
       });
 
       if (!order) {
-        throw new Error('Order not found or you are not authorized to cancel this order');
+        throw new ResourceNotFoundException('Order not found or you are not authorized to cancel this order');
       }
 
       // Check if order can be cancelled by customer
       if (![ORDER_STATUS.WAITING, ORDER_STATUS.PENDING, ORDER_STATUS.READY].includes(order.status)) {
-        throw new Error('Order cannot be cancelled at this stage');
+        throw new OrderCancellationException('Order cannot be cancelled at this stage');
       }
 
       // Update order status to cancelled
@@ -140,15 +142,13 @@ class CustomerOrderService {
       return await this.getOrderById(orderId, customerId);
     } catch (error) {
       await transaction.rollback();
-      throw error;
     }
   }
 
-  // Get order history for a specific order (customer can only view their own)
-  async getOrderHistory(orderId, customerId) {
-    const order = await Order.findOne({
+  // Get all order history for a customer, categorized by order_id
+  async getOrderHistory(customerId) {
+    const orders = await Order.findAll({
       where: { 
-        id: orderId,
         customer_id: customerId 
       },
       include: [
@@ -157,14 +157,16 @@ class CustomerOrderService {
           as: 'orderHistory',
           order: [['createdAt', 'ASC']]
         }
-      ]
+      ],
+      order: [['createdAt', 'DESC']]
     });
 
-    if (!order) {
-      throw new Error('Order not found or you are not authorized to view this order');
+    if (!orders || orders.length === 0) {
+      throw new ResourceNotFoundException('No orders found for this customer');
     }
 
-    return order.orderHistory;
+
+    return new OrderHistoryDto(orders);
   }
 
   // Get customer order statistics
@@ -210,7 +212,7 @@ class CustomerOrderService {
       limit
     });
 
-    return orders;
+    return new RecentOrdersResponseDto(orders);
   }
 }
 

@@ -17,6 +17,12 @@ router.get('/:orderId',  customerController.getOrderById);
 router.put('/cancel/:orderId',  customerController.cancelOrder);
 
 // Get order history (customer can view their own order history)
-router.get('/history/:orderId',  customerController.getOrderHistory);
+router.get('/history/:customerId',  customerController.getOrderHistory);
+
+// Get customer order statistics  
+router.get('/statistics/:customerId', customerController.getCustomerOrderStatistics);
+
+// Get recent orders for dashboard
+router.get('/recent/:customerId', customerController.getRecentOrders);
 
 module.exports = router;

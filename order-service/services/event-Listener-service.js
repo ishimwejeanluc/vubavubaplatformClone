@@ -4,6 +4,7 @@ const { PAYMENT_STATUS } = require('../utils/Enums/payment-status');
 const { sequelize } = require('../config/database');
 const OrderService = require('./order-service');
 const { OrderPlacedEventPublisher, OrderCanceledEventPublisher } = require('../events/publishedevent/index');
+const { ResourceNotFoundException } = require('../exceptions');
 
 const orderPlacedPublisher = new OrderPlacedEventPublisher();
 const orderCanceledPublisher = new OrderCanceledEventPublisher();
@@ -15,7 +16,7 @@ class EventListenerService {
     const transaction = await sequelize.transaction();
     try {
       const order = await Order.findByPk(orderId);
-      if (!order) throw new Error('Order not found');
+      if (!order) throw new ResourceNotFoundException('Order not found');
       await order.update({ status: ORDER_STATUS.DELIVERED }, { transaction });
       await OrderHistory.create({
         order_id: orderId,
@@ -34,7 +35,7 @@ class EventListenerService {
     const transaction = await sequelize.transaction();
     try {
       const order = await Order.findByPk(orderId);
-      if (!order) throw new Error('Order not found');
+      if (!order) throw new ResourceNotFoundException('Order not found');
       await order.update({ status: ORDER_STATUS.ASSIGNED }, { transaction });
       await OrderHistory.create({
         order_id: orderId,

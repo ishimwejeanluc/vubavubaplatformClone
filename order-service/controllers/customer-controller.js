@@ -1,135 +1,98 @@
 const customerService = require('../services/customer-service');
+const {CreateOrderRequestDto} = require('../dtos');
+const ApiResponse = require('../utils/api-response');    
 
 
 class CustomerOrderController {
   
-  async createOrder(req, res) {
+  async createOrder(req, res, next) {
     try {
-      
-      const newOrder = await customerService.createOrder(req.body);
+      const createOrderDto = new CreateOrderRequestDto(req.body);
+      const newOrder = await customerService.createOrder(createOrderDto);
 
-      res.status(201).json({
-        success: true,
-        message: 'Order created successfully',
-        data: newOrder
-      });
+      res.status(201).json(new ApiResponse(true, 'Order created successfully', newOrder));
     } catch (error) {
-      console.error('Error creating order:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to create order'
-      });
+     next(error);
     }
   }
 
   // Get customer's orders
-  async getCustomerOrders(req, res) {
+  async getCustomerOrders(req, res,next) {
     try {
       const customerId = req.user.id;
 
       const orders = await customerService.getCustomerOrders(customerId);
 
-      res.status(200).json({
-        success: true,
-        message: 'Customer orders retrieved successfully',
-        data: orders
-      });
+      res.status(200).json(new ApiResponse(true, 'Customer orders retrieved successfully', orders));
     } catch (error) {
-      console.error('Error fetching customer orders:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch orders'
-      });
+      next(error);
     }
   }
 
   // Get order by ID (customer can only view their own orders)
-  async getOrderById(req, res) {
+  async getOrderById(req, res, next) {
     try {
       const { orderId } = req.params;
       const customerId = req.user.id;
 
       const order = await customerService.getOrderById(orderId, customerId);
 
-      res.status(200).json({
-        success: true,
-        message: 'Order retrieved successfully',
-        data: order
-      });
+      res.status(200).json(new ApiResponse(true, 'Order retrieved successfully', order));
     } catch (error) {
-      console.error('Error fetching order:', error);
-      if (error.message.includes('not found') || error.message.includes('not authorized')) {
-        return res.status(404).json({
-          success: false,
-          message: error.message
-        });
-      }
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch order'
-      });
+      next(error);
     }
   }
 
   // Cancel order (customer can cancel their own orders)
-  async cancelOrder(req, res) {
+  async cancelOrder(req, res, next) {
     try {
       const { orderId } = req.params;
       const customerId = req.user.id;
 
       const cancelledOrder = await customerService.cancelOrder(orderId, customerId);
 
-      res.status(200).json({
-        success: true,
-        message: 'Order cancelled successfully',
-        data: cancelledOrder
-      });
+      res.status(200).json(new ApiResponse(true, 'Order cancelled successfully', cancelledOrder));
     } catch (error) {
-      console.error('Error cancelling order:', error);
-      if (error.message.includes('not authorized') || error.message.includes('not found')) {
-        return res.status(404).json({
-          success: false,
-          message: error.message
-        });
-      }
-      if (error.message.includes('cannot be cancelled')) {
-        return res.status(400).json({
-          success: false,
-          message: error.message
-        });
-      }
-      res.status(500).json({
-        success: false,
-        message: 'Failed to cancel order'
-      });
+      next(error);
     }
   }
 
-  // Get order history (customer can view their own order history)
-  async getOrderHistory(req, res) {
+  async getOrderHistory(req, res,next) {
     try {
-      const { orderId } = req.params;
-      const customerId = req.user.id;
+      const customerId = req.params.customerId;
 
-      const orderHistory = await customerService.getOrderHistory(orderId, customerId);
+      const orderHistory = await customerService.getOrderHistory(customerId);
 
-      res.status(200).json({
-        success: true,
-        message: 'Order history retrieved successfully',
-        data: orderHistory
-      });
+      res.status(200).json(new ApiResponse(true, 'Order history retrieved successfully', orderHistory));
     } catch (error) {
-      console.error('Error fetching order history:', error);
-      if (error.message.includes('not authorized') || error.message.includes('not found')) {
-        return res.status(404).json({
-          success: false,
-          message: error.message
-        });
-      }
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch order history'
-      });
+      next(error);
+    }
+  }
+
+  // Get customer order statistics
+  async getCustomerOrderStatistics(req, res, next) {
+    try {
+      const customerId = req.params.customerId;
+
+      const stats = await customerService.getCustomerOrderStatistics(customerId);
+
+      res.status(200).json(new ApiResponse(true, 'Customer order statistics retrieved successfully', stats));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Get recent orders for customer dashboard
+  async getRecentOrders(req, res, next) {
+    try {
+      const customerId = req.params.customerId;
+      const limit = req.query.limit || 5;
+
+      const recentOrders = await customerService.getRecentOrders(customerId, limit);
+
+      res.status(200).json(new ApiResponse(true, 'Recent orders retrieved successfully', recentOrders));
+    } catch (error) {
+      next(error);
     }
   }
 }
