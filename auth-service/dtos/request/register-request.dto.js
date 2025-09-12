@@ -1,9 +1,9 @@
 class RegisterRequestDto {
-  constructor({ name, email, password, phone, role = 'CUSTOMER' }) {
+  constructor({ name, email, phone, password, role}) {
     this.name = name;
     this.email = email;
-    this.password = password;
     this.phone = phone;
+    this.password = password;
     this.role = role;
   }
 }

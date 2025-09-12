@@ -16,7 +16,8 @@ class AuthController {
         result
       ));
     } catch (error) {
-     next(error);
+      next(error);
+      console.error('Error occurred during registration:', error);
     }
   }
 

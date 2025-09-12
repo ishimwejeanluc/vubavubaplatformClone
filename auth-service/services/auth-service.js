@@ -14,12 +14,14 @@ class AuthService {
     if (existingUser) {
       throw new UserAlreadyExistsException();
     }
+    const hashedPassword = await AuthHelpers.hashPassword(data.password);
+
 
     const result = await User.create({
       name: data.name,
       email: data.email,
       phone: data.phone,
-      password: AuthHelpers.hashPassword(data.password),
+      password: hashedPassword,
       role: data.role,
       isActive: true,
     });
